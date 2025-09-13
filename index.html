@@ -489,7 +489,9 @@
                 document.getElementById('mediaUrl').value = '';
                 document.getElementById('fileInput').value = '';
                 document.getElementById('createPostForm').style.display = 'none';
-                loadPosts();
+                
+                // Recarregar posts e atualizar allPosts
+                await loadPosts();
                 alert('Post criado com sucesso!');
             } catch (error) {
                 alert('Erro ao criar post');
@@ -502,9 +504,11 @@
                 const data = snapshot.val() || {};
                 
                 allPosts = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
-                displayPosts(allPosts);
+                return allPosts; // Retornar os posts para usar na busca
             } catch (error) {
+                console.error('Erro ao carregar posts:', error);
                 document.getElementById('postsContainer').innerHTML = '<div class="no-posts">Erro ao carregar posts</div>';
+                return [];
             }
         }
 
@@ -570,7 +574,15 @@
 
                     await postRef.update(updates);
                     localStorage.setItem(voteKey, type);
-                    loadPosts();
+                    
+                    // Recarregar posts para atualizar o array allPosts
+                    await loadPosts();
+                    
+                    // Se há uma busca ativa, re-aplicar o filtro
+                    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                    if (searchTerm) {
+                        filterAndDisplayPosts(searchTerm);
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao votar:', error);
@@ -631,7 +643,15 @@
 
                 input.value = '';
                 loadComments(postId);
-                loadPosts();
+                
+                // Recarregar posts para atualizar contador de comentários
+                await loadPosts();
+                
+                // Se há uma busca ativa, re-aplicar o filtro
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                if (searchTerm) {
+                    filterAndDisplayPosts(searchTerm);
+                }
             } catch (error) {
                 alert('Erro ao comentar');
             }
@@ -649,6 +669,17 @@
             // Mostrar container de posts quando buscar
             postsContainer.style.display = 'block';
 
+            // Se não temos posts carregados, carregar primeiro
+            if (allPosts.length === 0) {
+                loadPosts().then(() => {
+                    filterAndDisplayPosts(term);
+                });
+            } else {
+                filterAndDisplayPosts(term);
+            }
+        }
+
+        function filterAndDisplayPosts(term) {
             const filtered = allPosts.filter(post => 
                 post.title.toLowerCase().includes(term) ||
                 post.content.toLowerCase().includes(term) ||
