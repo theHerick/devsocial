@@ -331,6 +331,9 @@
         let currentUser = null;
         let userProfile = null;
         let isOnline = navigator.onLine;
+        let firebaseConnected = true;
+        let retryAttempts = 0;
+        const MAX_RETRY_ATTEMPTS = 3;
 
         // Network status monitoring
         window.addEventListener('online', () => {
@@ -358,15 +361,57 @@
                     userProfile = userData;
                     prompt.textContent = `${userData.username}@devconsole:~$`;
                     addOutput(`Welcome back, ${userData.username}!`, 'success');
-                    loadPosts();
+                    
+                    // Try to load posts if online, otherwise show offline message
+                    if (isOnline) {
+                        loadPosts();
+                    } else {
+                        addOutput('📡 You are offline. Posts will load when connection is restored.', 'warning');
+                    }
                 } catch (error) {
                     localStorage.removeItem('devconsole_user');
+                    addOutput('⚠️ Session data corrupted, please login again.', 'warning');
                 }
             }
         }
 
         // Initialize on page load
         checkCurrentUser();
+
+        // Test Firebase connectivity
+        async function testFirebaseConnection() {
+            try {
+                // Try to read a simple document to test connection
+                const testDoc = await getDoc(doc(db, 'system', 'test'));
+                firebaseConnected = true;
+                retryAttempts = 0;
+                return true;
+            } catch (error) {
+                console.log('Firebase connection test failed:', error);
+                firebaseConnected = false;
+                return false;
+            }
+        }
+
+        // Auto-retry function for failed operations
+        async function retryOperation(operation, maxRetries = MAX_RETRY_ATTEMPTS) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    return await operation();
+                } catch (error) {
+                    console.log(`Attempt ${i + 1} failed:`, error);
+                    if (i === maxRetries - 1) throw error;
+                    
+                    // Wait before retry (exponential backoff)
+                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    
+                    // Test connection before retry
+                    addOutput(`🔄 Retrying in ${delay/1000}s... (${i + 1}/${maxRetries})`, 'warning');
+                    await testFirebaseConnection();
+                }
+            }
+        }
 
         // Add output to console
         function addOutput(text, type = '') {
@@ -427,6 +472,12 @@
                 case 'status':
                     checkStatus();
                     break;
+                case 'test':
+                    testConnection();
+                    break;
+                case 'reset':
+                    resetLocalData();
+                    break;
                 default:
                     addOutput(`Command not found: ${cmd}. Type 'help' for available commands.`, 'error');
             }
@@ -444,6 +495,8 @@
             addOutput('  logout - Logout from your account');
             addOutput('  posts - Load recent posts');
             addOutput('  status - Check connection status');
+            addOutput('  test - Test Firebase connectivity');
+            addOutput('  reset - Clear local data and logout');
             addOutput('  clear - Clear the console');
             if (currentUser) {
                 addOutput('  /post {title} Title - Create a post with just title');
@@ -570,22 +623,33 @@
             const password = args[2];
 
             try {
-                // Check if user exists in Firestore
-                const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
-                
-                if (!userDoc.exists()) {
-                    addOutput(`Username "${username}" not found.`, 'error');
-                    addOutput('💡 Use /register [username] [password] to create account', 'info');
+                // Test connection first
+                if (!isOnline) {
+                    addOutput('📡 No internet connection. Please check your network.', 'error');
                     return;
                 }
 
-                const userData = userDoc.data();
-                
-                // Check password
-                if (userData.password !== password) {
-                    addOutput('Incorrect password.', 'error');
-                    return;
-                }
+                addOutput('🔍 Checking credentials...', 'info');
+
+                const loginOperation = async () => {
+                    // Check if user exists in Firestore
+                    const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
+                    
+                    if (!userDoc.exists()) {
+                        throw new Error(`USER_NOT_FOUND:Username "${username}" not found.`);
+                    }
+
+                    const userData = userDoc.data();
+                    
+                    // Check password
+                    if (userData.password !== password) {
+                        throw new Error('WRONG_PASSWORD:Incorrect password.');
+                    }
+
+                    return userData;
+                };
+
+                const userData = await retryOperation(loginOperation);
 
                 // Login successful
                 currentUser = userData;
@@ -600,8 +664,21 @@
                 
             } catch (error) {
                 let errorMessage = 'Login failed: ';
+                
+                // Handle specific errors
+                if (error.message.startsWith('USER_NOT_FOUND:')) {
+                    addOutput(error.message.replace('USER_NOT_FOUND:', ''), 'error');
+                    addOutput('💡 Use /register [username] [password] to create account', 'info');
+                    return;
+                } else if (error.message.startsWith('WRONG_PASSWORD:')) {
+                    addOutput(error.message.replace('WRONG_PASSWORD:', ''), 'error');
+                    return;
+                }
+                
                 if (!isOnline) {
                     errorMessage = '📡 Login failed: No internet connection. Please check your network.';
+                } else if (error.message.includes('offline') || error.message.includes('network')) {
+                    errorMessage = '📡 Login failed: Cannot connect to server. Check your internet connection.';
                 } else {
                     errorMessage += error.message;
                 }
@@ -706,25 +783,37 @@
             }
 
             try {
-                // Check if username already exists
-                const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
-                if (userDoc.exists()) {
-                    addOutput(`Username "${username}" is already taken. Please choose another one.`, 'error');
+                // Test connection first
+                if (!isOnline) {
+                    addOutput('📡 No internet connection. Please check your network.', 'error');
                     return;
                 }
 
-                // Create user data
-                const userData = {
-                    id: username.toLowerCase(),
-                    username: username,
-                    password: password,
-                    createdAt: new Date(),
-                    postCount: 0,
-                    joinedDate: new Date().toLocaleDateString()
+                addOutput('🔄 Checking if username is available...', 'info');
+
+                const registerOperation = async () => {
+                    // Check if username already exists
+                    const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
+                    if (userDoc.exists()) {
+                        throw new Error(`USERNAME_EXISTS:Username "${username}" is already taken. Please choose another one.`);
+                    }
+
+                    // Create user data
+                    const userData = {
+                        id: username.toLowerCase(),
+                        username: username,
+                        password: password,
+                        createdAt: new Date(),
+                        postCount: 0,
+                        joinedDate: new Date().toLocaleDateString()
+                    };
+
+                    // Save user to Firestore
+                    await setDoc(doc(db, 'users', username.toLowerCase()), userData);
+                    return userData;
                 };
 
-                // Save user to Firestore
-                await setDoc(doc(db, 'users', username.toLowerCase()), userData);
+                const userData = await retryOperation(registerOperation);
 
                 // Login the user automatically
                 currentUser = userData;
@@ -740,19 +829,33 @@
             } catch (error) {
                 let errorMessage = 'Registration failed: ';
                 
+                // Handle specific errors
+                if (error.message.startsWith('USERNAME_EXISTS:')) {
+                    addOutput(error.message.replace('USERNAME_EXISTS:', ''), 'error');
+                    return;
+                }
+                
                 // Network-specific error handling
                 if (!isOnline) {
                     errorMessage = '📡 Registration failed: No internet connection. Please check your network.';
+                } else if (error.message.includes('offline') || error.message.includes('network')) {
+                    errorMessage = '📡 Registration failed: Cannot connect to server. Check your internet connection.';
+                    addOutput('🔧 Troubleshooting tips:', 'info');
+                    addOutput('  • Check your internet connection', 'info');
+                    addOutput('  • Try refreshing the page', 'info');
+                    addOutput('  • Disable VPN if using one', 'info');
                 } else if (error.code === 'unavailable' || error.message.includes('UNAVAILABLE')) {
                     errorMessage = '🔄 Registration failed: Firebase service temporarily unavailable. Please try again.';
                 } else if (error.code === 'cancelled' || error.message.includes('cancelled')) {
                     errorMessage = '⏱️ Registration failed: Request timeout. Please try again.';
                 } else {
                     errorMessage += error.message;
+                    addOutput('🐛 Debug info: ' + error.code || 'unknown', 'warning');
                 }
                 
                 addOutput(errorMessage, 'error');
                 addOutput('💡 Tip: Try /reg [username] [password] for quick retry', 'info');
+                addOutput('💡 Or try: refresh page and try again', 'info');
             }
         }
 
@@ -1142,17 +1245,70 @@
         function checkStatus() {
             addOutput('🔍 DevConsole Status Check:', 'info');
             addOutput(`📡 Network: ${isOnline ? '🟢 Online' : '🔴 Offline'}`, isOnline ? 'success' : 'error');
-            addOutput(`👤 User: ${currentUser ? `🟢 Logged in as ${userProfile?.username || 'Unknown'}` : '🔴 Not logged in'}`, currentUser ? 'success' : 'warning');
-            addOutput(`🔥 Firebase: ${firebaseConfig.projectId}`, 'info');
+            addOutput(`� Firebase: ${firebaseConnected ? '🟢 Connected' : '🔴 Disconnected'}`, firebaseConnected ? 'success' : 'error');
+            addOutput(`�👤 User: ${currentUser ? `🟢 Logged in as ${userProfile?.username || 'Unknown'}` : '🔴 Not logged in'}`, currentUser ? 'success' : 'warning');
             addOutput(`🌍 Browser: ${navigator.userAgent.split(' ')[0]}`, 'info');
             
             if (!isOnline) {
                 addOutput('💡 Tip: Check your internet connection', 'warning');
             }
             
+            if (!firebaseConnected) {
+                addOutput('💡 Tip: Try "test" command to check Firebase connection', 'warning');
+            }
+            
             if (!currentUser) {
                 addOutput('💡 Tip: Use /reg [username] [password] to create account', 'info');
             }
+        }
+
+        // Test connection function
+        async function testConnection() {
+            addOutput('🔬 Testing connections...', 'info');
+            
+            // Test basic internet
+            addOutput(`📡 Internet: ${navigator.onLine ? '🟢 Available' : '🔴 Unavailable'}`, navigator.onLine ? 'success' : 'error');
+            
+            // Test Firebase connection
+            addOutput('🔥 Testing Firebase connection...', 'info');
+            try {
+                const connected = await testFirebaseConnection();
+                if (connected) {
+                    addOutput('🔥 Firebase: 🟢 Connected and working!', 'success');
+                    addOutput('✅ All systems operational', 'success');
+                } else {
+                    addOutput('🔥 Firebase: 🔴 Connection failed', 'error');
+                    addOutput('🔧 Troubleshooting suggestions:', 'warning');
+                    addOutput('  • Refresh the page (Ctrl+F5)', 'info');
+                    addOutput('  • Check if you can access google.com', 'info');
+                    addOutput('  • Try disabling VPN/proxy', 'info');
+                    addOutput('  • Check firewall/antivirus settings', 'info');
+                }
+            } catch (error) {
+                addOutput('🔥 Firebase: 🔴 Error - ' + error.message, 'error');
+                addOutput('🔧 Try refreshing the page', 'warning');
+            }
+        }
+
+        // Reset local data function
+        function resetLocalData() {
+            addOutput('🧹 Clearing local data...', 'info');
+            
+            // Clear localStorage
+            localStorage.removeItem('devconsole_user');
+            
+            // Reset variables
+            currentUser = null;
+            userProfile = null;
+            prompt.textContent = 'guest@devconsole:~$';
+            
+            // Clear console and show welcome message
+            output.innerHTML = '';
+            addOutput('✅ Local data cleared successfully!', 'success');
+            addOutput('Welcome to DevConsole! Type \'help\' for available commands.', 'info');
+            addOutput('Please login or register to start using the social network.');
+            
+            addOutput('💡 This command clears your local session data. You will need to login again.', 'warning');
         }
 
         // Clear output helper
