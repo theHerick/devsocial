@@ -305,6 +305,30 @@
             text-align: center;
         }
 
+        .media-toggle {
+            background: #333;
+            color: #fff;
+            border: 1px solid #fff;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .media-toggle:hover {
+            background: #555;
+        }
+
+        .media-content {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .media-content.show {
+            display: block;
+        }
+
         .post-image {
             max-width: 100%;
             height: auto;
@@ -753,29 +777,63 @@
         function createMediaHTML(media) {
             if (!media) return '';
 
-            const mediaContainer = '<div class="post-media">';
-            const endContainer = '</div>';
+            const mediaId = generateId();
+            let buttonText = '';
+            let mediaContent = '';
 
             if (media.type === 'base64') {
                 if (media.mediaType === 'image') {
-                    return `${mediaContainer}<img src="${media.data}" alt="Imagem" class="post-image">${endContainer}`;
+                    buttonText = '📷 Ver Imagem';
+                    mediaContent = `<img src="${media.data}" alt="Imagem" class="post-image">`;
                 } else if (media.mediaType === 'video') {
-                    return `${mediaContainer}<video controls class="post-video"><source src="${media.data}" type="video/mp4">Seu navegador não suporta vídeo.</video>${endContainer}`;
+                    buttonText = '🎬 Ver Vídeo';
+                    mediaContent = `<video controls class="post-video"><source src="${media.data}" type="video/mp4">Seu navegador não suporta vídeo.</video>`;
                 }
             } else if (media.type === 'url') {
                 if (media.mediaType === 'youtube') {
                     const videoId = getYouTubeId(media.url);
                     if (videoId) {
-                        return `${mediaContainer}<div class="youtube-embed"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>${endContainer}`;
+                        buttonText = '🎥 Ver Vídeo do YouTube';
+                        mediaContent = `<div class="youtube-embed"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`;
                     }
                 } else if (media.mediaType === 'image') {
-                    return `${mediaContainer}<img src="${media.url}" alt="Imagem" class="post-image" onerror="this.style.display='none'">${endContainer}`;
+                    buttonText = '📷 Ver Imagem';
+                    mediaContent = `<img src="${media.url}" alt="Imagem" class="post-image" onerror="this.style.display='none'">`;
                 } else if (media.mediaType === 'video') {
-                    return `${mediaContainer}<video controls class="post-video"><source src="${media.url}" type="video/mp4">Seu navegador não suporta vídeo.</video>${endContainer}`;
+                    buttonText = '🎬 Ver Vídeo';
+                    mediaContent = `<video controls class="post-video"><source src="${media.url}" type="video/mp4">Seu navegador não suporta vídeo.</video>`;
                 }
             }
 
+            if (buttonText && mediaContent) {
+                return `
+                    <div class="post-media">
+                        <button class="media-toggle" onclick="toggleMedia('${mediaId}')">${buttonText}</button>
+                        <div class="media-content" id="media-${mediaId}">
+                            ${mediaContent}
+                        </div>
+                    </div>
+                `;
+            }
+
             return '';
+        }
+
+        function toggleMedia(mediaId) {
+            const mediaContent = document.getElementById('media-' + mediaId);
+            const button = event.target;
+            
+            if (mediaContent.classList.contains('show')) {
+                mediaContent.classList.remove('show');
+                // Voltar texto original do botão
+                if (button.textContent.includes('Ocultar')) {
+                    button.textContent = button.textContent.replace('Ocultar', 'Ver');
+                }
+            } else {
+                mediaContent.classList.add('show');
+                // Mudar texto do botão
+                button.textContent = button.textContent.replace('Ver', 'Ocultar');
+            }
         }
 
         // Enter para comentar
