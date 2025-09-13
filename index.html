@@ -13,16 +13,16 @@
 
         body {
             font-family: 'Courier New', monospace;
-            background: #0a0a0a;
-            color: #00ff00;
+            background: #000;
+            color: #fff;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .header {
-            background: #000;
-            border-bottom: 1px solid #333;
-            padding: 1rem;
-            text-align: center;
+            display: none;
         }
 
         .logo {
@@ -32,8 +32,8 @@
 
         .container {
             max-width: 800px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
+            width: 100%;
+            padding: 2rem;
         }
 
         .main-search {
@@ -46,8 +46,8 @@
         .search-giant {
             flex: 1;
             background: #000;
-            border: 2px solid #00ff00;
-            color: #00ff00;
+            border: 2px solid #fff;
+            color: #fff;
             padding: 1.5rem;
             font-family: inherit;
             font-size: 1.5rem;
@@ -57,15 +57,14 @@
 
         .search-giant:focus {
             outline: none;
-            border-color: #ff0080;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            border-color: #ccc;
         }
 
         .add-btn {
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: #00ff00;
+            background: #fff;
             color: #000;
             border: none;
             font-size: 2rem;
@@ -75,13 +74,12 @@
         }
 
         .add-btn:hover {
-            background: #ff0080;
-            transform: scale(1.1);
+            background: #ccc;
         }
 
         .create-post {
             background: #111;
-            border: 1px solid #333;
+            border: 1px solid #fff;
             padding: 1rem;
             margin-bottom: 2rem;
             border-radius: 5px;
@@ -90,8 +88,8 @@
         .create-post input, .create-post textarea {
             width: 100%;
             background: #000;
-            border: 1px solid #333;
-            color: #00ff00;
+            border: 1px solid #fff;
+            color: #fff;
             padding: 0.5rem;
             margin-bottom: 1rem;
             font-family: inherit;
@@ -104,9 +102,9 @@
         }
 
         .btn {
-            background: #333;
-            color: #00ff00;
-            border: 1px solid #555;
+            background: #fff;
+            color: #000;
+            border: 1px solid #fff;
             padding: 0.5rem 1rem;
             cursor: pointer;
             font-family: inherit;
@@ -114,7 +112,7 @@
         }
 
         .btn:hover {
-            background: #555;
+            background: #ccc;
         }
 
         .search {
@@ -131,14 +129,14 @@
 
         .post {
             background: #111;
-            border: 1px solid #333;
+            border: 1px solid #fff;
             padding: 1rem;
             margin-bottom: 1rem;
             border-radius: 5px;
         }
 
         .post-title {
-            color: #00ff00;
+            color: #fff;
             font-weight: bold;
             margin-bottom: 0.5rem;
         }
@@ -164,8 +162,8 @@
 
         .post-actions button {
             background: none;
-            border: 1px solid #444;
-            color: #777;
+            border: 1px solid #fff;
+            color: #fff;
             padding: 0.25rem 0.5rem;
             cursor: pointer;
             font-family: inherit;
@@ -174,8 +172,8 @@
         }
 
         .post-actions button:hover {
-            color: #00ff00;
-            border-color: #00ff00;
+            color: #000;
+            background: #fff;
         }
 
         .comments {
@@ -191,7 +189,7 @@
 
         .comment {
             background: #0a0a0a;
-            border-left: 2px solid #333;
+            border-left: 2px solid #fff;
             padding: 0.5rem;
             margin-bottom: 0.5rem;
         }
@@ -210,8 +208,8 @@
         .add-comment input {
             flex: 1;
             background: #000;
-            border: 1px solid #333;
-            color: #00ff00;
+            border: 1px solid #fff;
+            color: #fff;
             padding: 0.5rem;
             font-family: inherit;
             border-radius: 3px;
@@ -225,7 +223,7 @@
 
         .no-posts {
             text-align: center;
-            color: #666;
+            color: #fff;
             padding: 2rem;
         }
 
@@ -235,11 +233,130 @@
             }
         }
 
+        /* Warning Modal */
+        .warning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .warning-modal {
+            background: #111;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            padding: 2rem;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .warning-title {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .warning-text {
+            color: #ccc;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+
+        .warning-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .warning-btn {
+            background: #fff;
+            color: #000;
+            border: 1px solid #fff;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .warning-btn:hover {
+            background: #ccc;
+        }
+
+        .warning-btn.decline {
+            background: #000;
+            color: #fff;
+        }
+
+        .warning-btn.decline:hover {
+            background: #333;
+        }
+
+        /* Media Styles */
+        .post-media {
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .post-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            border: 1px solid #fff;
+        }
+
+        .post-video {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border-radius: 5px;
+            border: 1px solid #fff;
+        }
+
+        .youtube-embed {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 5px;
+            border: 1px solid #fff;
+        }
+
+        .youtube-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">/anon/</div>
+    <!-- Warning Modal -->
+    <div class="warning-overlay" id="warningModal">
+        <div class="warning-modal">
+            <div class="warning-title">⚠️ Aviso de Conteúdo</div>
+            <div class="warning-text">
+                Este fórum pode conter conteúdo nocivo, adulto ou inadequado. 
+                <br><br>
+                Ao continuar, você confirma que tem 18+ anos e aceita visualizar tal conteúdo por sua própria responsabilidade.
+                <br><br>
+                Deseja continuar?
+            </div>
+            <div class="warning-buttons">
+                <button class="warning-btn" onclick="acceptWarning()">Aceitar e Continuar</button>
+                <button class="warning-btn decline" onclick="declineWarning()">Sair</button>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -254,6 +371,14 @@
             <input type="text" id="postTitle" placeholder="Título">
             <textarea id="postContent" placeholder="Conteúdo"></textarea>
             <input type="text" id="postTags" placeholder="Tags (separadas por vírgula)">
+            
+            <!-- Upload de arquivos -->
+            <div style="margin-bottom: 1rem;">
+                <input type="file" id="fileInput" accept="image/*,video/*" style="margin-bottom: 0.5rem;">
+                <div style="color: #ccc; font-size: 0.8rem;">Ou cole URL de imagem/vídeo:</div>
+                <input type="url" id="mediaUrl" placeholder="https://exemplo.com/imagem.jpg ou https://youtube.com/watch?v=..." style="margin-bottom: 0;">
+            </div>
+            
             <button class="btn" onclick="createPost()">Postar</button>
             <button class="btn" onclick="cancelPost()" style="margin-left: 10px;">Cancelar</button>
         </div>
@@ -313,6 +438,8 @@
             const title = document.getElementById('postTitle').value.trim();
             const content = document.getElementById('postContent').value.trim();
             const tagsInput = document.getElementById('postTags').value.trim();
+            const mediaUrl = document.getElementById('mediaUrl').value.trim();
+            const fileInput = document.getElementById('fileInput');
 
             if (!title || !content) {
                 alert('Preencha título e conteúdo');
@@ -321,11 +448,33 @@
 
             const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
             
+            let mediaData = null;
+            
+            // Processar arquivo local
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                try {
+                    mediaData = await convertFileToBase64(file);
+                } catch (error) {
+                    alert('Erro ao processar arquivo');
+                    return;
+                }
+            }
+            // Processar URL de mídia
+            else if (mediaUrl) {
+                mediaData = {
+                    type: 'url',
+                    url: mediaUrl,
+                    mediaType: getMediaType(mediaUrl)
+                };
+            }
+            
             const post = {
                 id: generateId(),
                 title: title,
                 content: content,
                 tags: tags,
+                media: mediaData,
                 timestamp: Date.now(),
                 upvotes: 0,
                 downvotes: 0,
@@ -337,6 +486,8 @@
                 document.getElementById('postTitle').value = '';
                 document.getElementById('postContent').value = '';
                 document.getElementById('postTags').value = '';
+                document.getElementById('mediaUrl').value = '';
+                document.getElementById('fileInput').value = '';
                 document.getElementById('createPostForm').style.display = 'none';
                 loadPosts();
                 alert('Post criado com sucesso!');
@@ -369,6 +520,7 @@
                 <div class="post" data-id="${post.id}">
                     <div class="post-title">${post.title}</div>
                     <div class="post-content">${post.content}</div>
+                    ${post.media ? createMediaHTML(post.media) : ''}
                     ${post.tags && post.tags.length > 0 ? `<div style="color: #666; font-size: 0.8rem;">${post.tags.map(tag => '#' + tag).join(' ')}</div>` : ''}
                     <div class="post-meta">
                         ID: ${post.id} • ${formatTime(post.timestamp)}
@@ -523,6 +675,76 @@
             document.getElementById('postTitle').value = '';
             document.getElementById('postContent').value = '';
             document.getElementById('postTags').value = '';
+            document.getElementById('mediaUrl').value = '';
+            document.getElementById('fileInput').value = '';
+        }
+
+        // Funções para mídia
+        function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                // Verificar tamanho (máximo 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    reject(new Error('Arquivo muito grande (máximo 2MB)'));
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    resolve({
+                        type: 'base64',
+                        data: e.target.result,
+                        mediaType: file.type.startsWith('image/') ? 'image' : 'video',
+                        fileName: file.name
+                    });
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function getMediaType(url) {
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                return 'youtube';
+            } else if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+                return 'image';
+            } else if (url.match(/\.(mp4|webm|ogg|avi|mov)$/i)) {
+                return 'video';
+            }
+            return 'unknown';
+        }
+
+        function getYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function createMediaHTML(media) {
+            if (!media) return '';
+
+            const mediaContainer = '<div class="post-media">';
+            const endContainer = '</div>';
+
+            if (media.type === 'base64') {
+                if (media.mediaType === 'image') {
+                    return `${mediaContainer}<img src="${media.data}" alt="Imagem" class="post-image">${endContainer}`;
+                } else if (media.mediaType === 'video') {
+                    return `${mediaContainer}<video controls class="post-video"><source src="${media.data}" type="video/mp4">Seu navegador não suporta vídeo.</video>${endContainer}`;
+                }
+            } else if (media.type === 'url') {
+                if (media.mediaType === 'youtube') {
+                    const videoId = getYouTubeId(media.url);
+                    if (videoId) {
+                        return `${mediaContainer}<div class="youtube-embed"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>${endContainer}`;
+                    }
+                } else if (media.mediaType === 'image') {
+                    return `${mediaContainer}<img src="${media.url}" alt="Imagem" class="post-image" onerror="this.style.display='none'">${endContainer}`;
+                } else if (media.mediaType === 'video') {
+                    return `${mediaContainer}<video controls class="post-video"><source src="${media.url}" type="video/mp4">Seu navegador não suporta vídeo.</video>${endContainer}`;
+                }
+            }
+
+            return '';
         }
 
         // Enter para comentar
@@ -535,6 +757,24 @@
 
         // Inicializar - não carrega posts automaticamente
         // loadPosts(); // Removido para não carregar na inicialização
+
+        // Warning Modal Functions
+        function acceptWarning() {
+            document.getElementById('warningModal').style.display = 'none';
+            localStorage.setItem('forum_warning_accepted', 'true');
+        }
+
+        function declineWarning() {
+            window.location.href = 'https://google.com';
+        }
+
+        // Check if warning was already accepted
+        window.addEventListener('load', function() {
+            const warningAccepted = localStorage.getItem('forum_warning_accepted');
+            if (warningAccepted === 'true') {
+                document.getElementById('warningModal').style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
