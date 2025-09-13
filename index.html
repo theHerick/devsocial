@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevConsole - Social Network for Developers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Courier New', 'Monaco', 'Lucida Console', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .console-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .console-header {
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .console-title {
+            color: #58a6ff;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .console-subtitle {
+            color: #7d8590;
+            font-size: 12px;
+        }
+
+        .console-output {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+
+        .console-input-container {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #30363d;
+            padding-top: 10px;
+        }
+
+        .console-prompt {
+            color: #7c3aed;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .console-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #c9d1d9;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+        }
+
+        .console-input::placeholder {
+            color: #7d8590;
+        }
+
+        .output-line {
+            margin-bottom: 8px;
+            padding: 2px 0;
+        }
+
+        .output-error {
+            color: #f85149;
+        }
+
+        .output-success {
+            color: #56d364;
+        }
+
+        .output-info {
+            color: #58a6ff;
+        }
+
+        .output-warning {
+            color: #f0883e;
+        }
+
+        .post {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #7d8590;
+            font-size: 12px;
+        }
+
+        .post-author {
+            color: #58a6ff;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .post-handle {
+            color: #7d8590;
+            margin-right: 10px;
+        }
+
+        .post-time {
+            color: #7d8590;
+        }
+
+        .post-title {
+            color: #f0f6fc;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .post-content {
+            color: #c9d1d9;
+            line-height: 1.5;
+        }
+
+        .post-content strong {
+            color: #f0f6fc;
+            font-weight: bold;
+        }
+
+        .post-content u {
+            text-decoration: underline;
+        }
+
+        .post-image {
+            max-width: 100%;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        .auth-form {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            color: #f0f6fc;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 8px 10px;
+            color: #c9d1d9;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        .form-button {
+            background: #238636;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .form-button:hover {
+            background: #2ea043;
+        }
+
+        .form-button.secondary {
+            background: #21262d;
+            border: 1px solid #30363d;
+        }
+
+        .form-button.secondary:hover {
+            background: #30363d;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .command-help {
+            color: #7d8590;
+            font-style: italic;
+            margin: 5px 0;
+        }
+
+        /* Scrollbar styling */
+        .console-output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .console-output::-webkit-scrollbar-track {
+            background: #161b22;
+        }
+
+        .console-output::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+        .console-output::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+    </style>
+</head>
+<body>
+    <div class="console-container">
+        <div class="console-header">
+            <div class="console-title">DevConsole v1.0.0</div>
+            <div class="console-subtitle">Social Network for Developers</div>
+        </div>
+
+        <div class="console-output" id="output">
+            <div class="output-line output-info">Welcome to DevConsole! Type 'help' for available commands.</div>
+            <div class="output-line">Please login or register to start using the social network.</div>
+        </div>
+
+        <div class="console-input-container">
+            <span class="console-prompt" id="prompt">guest@devconsole:~$</span>
+            <input type="text" class="console-input" id="commandInput" placeholder="Type a command..." autocomplete="off">
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAexCf7hPN2OQvfsw66UDpci6nycivrK98",
+            authDomain: "void-activation-system.firebaseapp.com",
+            databaseURL: "https://void-activation-system-default-rtdb.firebaseio.com",
+            projectId: "void-activation-system",
+            storageBucket: "void-activation-system.firebasestorage.app",
+            messagingSenderId: "108268095097",
+            appId: "1:108268095097:web:4f45ff75a9e528b3f0f6a8",
+            measurementId: "G-P71BZFRDQB"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Global variables
+        let currentUser = null;
+        let userProfile = null;
+
+        // DOM elements
+        const output = document.getElementById('output');
+        const commandInput = document.getElementById('commandInput');
+        const prompt = document.getElementById('prompt');
+
+        // Authentication state listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    userProfile = userDoc.data();
+                    prompt.textContent = `${userProfile.handle}@devconsole:~$`;
+                    addOutput(`Welcome back, ${userProfile.username}!`, 'success');
+                    loadPosts();
+                }
+            } else {
+                currentUser = null;
+                userProfile = null;
+                prompt.textContent = 'guest@devconsole:~$';
+            }
+        });
+
+        // Add output to console
+        function addOutput(text, type = '') {
+            const line = document.createElement('div');
+            line.className = `output-line ${type ? 'output-' + type : ''}`;
+            line.innerHTML = text;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Parse and execute commands
+        function executeCommand(command) {
+            const args = command.trim().split(' ');
+            const cmd = args[0].toLowerCase();
+
+            addOutput(`${prompt.textContent} ${command}`);
+
+            switch (cmd) {
+                case 'help':
+                    showHelp();
+                    break;
+                case 'login':
+                    showLoginForm();
+                    break;
+                case 'register':
+                    showRegisterForm();
+                    break;
+                case 'logout':
+                    handleLogout();
+                    break;
+                case '/publi':
+                    handlePublish(command);
+                    break;
+                case 'clear':
+                    output.innerHTML = '';
+                    break;
+                case 'posts':
+                    loadPosts();
+                    break;
+                default:
+                    addOutput(`Command not found: ${cmd}. Type 'help' for available commands.`, 'error');
+            }
+        }
+
+        // Show help
+        function showHelp() {
+            addOutput('Available commands:', 'info');
+            addOutput('  help - Show this help message');
+            addOutput('  login - Login to your account');
+            addOutput('  register - Create a new account');
+            addOutput('  logout - Logout from your account');
+            addOutput('  posts - Load recent posts');
+            addOutput('  clear - Clear the console');
+            if (currentUser) {
+                addOutput('  /publi {title} Title {bold}; {description} Description {underline} - Create a post');
+                addOutput('  /publi {title} Title; {description} Description {img} image-url {img} - Post with image');
+            }
+        }
+
+        // Show login form
+        function showLoginForm() {
+            if (currentUser) {
+                addOutput('You are already logged in!', 'warning');
+                return;
+            }
+
+            const formHtml = `
+                <div class="auth-form">
+                    <h3 style="color: #f0f6fc; margin-bottom: 15px;">Login</h3>
+                    <div class="form-group">
+                        <label class="form-label">Email:</label>
+                        <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password:</label>
+                        <input type="password" class="form-input" id="loginPassword" placeholder="Password">
+                    </div>
+                    <button class="form-button" onclick="performLogin()">Login</button>
+                    <button class="form-button secondary" onclick="clearOutput()">Cancel</button>
+                </div>
+            `;
+            addOutput(formHtml);
+        }
+
+        // Show register form
+        function showRegisterForm() {
+            if (currentUser) {
+                addOutput('You are already logged in!', 'warning');
+                return;
+            }
+
+            const formHtml = `
+                <div class="auth-form">
+                    <h3 style="color: #f0f6fc; margin-bottom: 15px;">Register</h3>
+                    <div class="form-group">
+                        <label class="form-label">Username:</label>
+                        <input type="text" class="form-input" id="regUsername" placeholder="Your display name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Handle (@):</label>
+                        <input type="text" class="form-input" id="regHandle" placeholder="yourhandle (without @)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email:</label>
+                        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password:</label>
+                        <input type="password" class="form-input" id="regPassword" placeholder="Password (min 6 characters)">
+                    </div>
+                    <button class="form-button" onclick="performRegister()">Register</button>
+                    <button class="form-button secondary" onclick="clearOutput()">Cancel</button>
+                </div>
+            `;
+            addOutput(formHtml);
+        }
+
+        // Perform login
+        window.performLogin = async function() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                addOutput('Please fill in all fields.', 'error');
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                addOutput('Login successful!', 'success');
+                clearOutput();
+            } catch (error) {
+                addOutput(`Login failed: ${error.message}`, 'error');
+            }
+        };
+
+        // Perform registration
+        window.performRegister = async function() {
+            const username = document.getElementById('regUsername').value;
+            const handle = document.getElementById('regHandle').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!username || !handle || !email || !password) {
+                addOutput('Please fill in all fields.', 'error');
+                return;
+            }
+
+            if (handle.includes('@') || handle.includes(' ')) {
+                addOutput('Handle should not contain @ or spaces.', 'error');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Save user profile
+                await setDoc(doc(db, 'users', user.uid), {
+                    username: username,
+                    handle: handle,
+                    email: email,
+                    createdAt: serverTimestamp()
+                });
+
+                addOutput('Registration successful! You are now logged in.', 'success');
+                clearOutput();
+            } catch (error) {
+                addOutput(`Registration failed: ${error.message}`, 'error');
+            }
+        };
+
+        // Handle logout
+        async function handleLogout() {
+            if (!currentUser) {
+                addOutput('You are not logged in.', 'warning');
+                return;
+            }
+
+            try {
+                await signOut(auth);
+                addOutput('Logged out successfully.', 'success');
+                output.innerHTML = '<div class="output-line output-info">Welcome to DevConsole! Type \'help\' for available commands.</div>';
+            } catch (error) {
+                addOutput(`Logout failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Handle publish command
+        async function handlePublish(command) {
+            if (!currentUser) {
+                addOutput('You must be logged in to publish posts.', 'error');
+                return;
+            }
+
+            // Parse the command
+            const content = command.substring(7); // Remove '/publi '
+            
+            if (!content.trim()) {
+                addOutput('Usage: /publi {title} Your Title; {description} Your description with {bold} and {underline} formatting', 'error');
+                return;
+            }
+
+            try {
+                const parsed = parsePublishCommand(content);
+                
+                if (!parsed.title || !parsed.description) {
+                    addOutput('Both title and description are required.', 'error');
+                    return;
+                }
+
+                // Save post to Firestore
+                await addDoc(collection(db, 'posts'), {
+                    title: parsed.title,
+                    content: parsed.description,
+                    imageUrl: parsed.imageUrl,
+                    authorId: currentUser.uid,
+                    authorUsername: userProfile.username,
+                    authorHandle: userProfile.handle,
+                    createdAt: serverTimestamp()
+                });
+
+                addOutput('Post published successfully!', 'success');
+                loadPosts();
+            } catch (error) {
+                addOutput(`Failed to publish post: ${error.message}`, 'error');
+            }
+        }
+
+        // Parse publish command
+        function parsePublishCommand(content) {
+            const result = {
+                title: '',
+                description: '',
+                imageUrl: ''
+            };
+
+            // Extract title
+            const titleMatch = content.match(/\{title\}\s*([^;]+)/);
+            if (titleMatch) {
+                result.title = titleMatch[1].trim();
+            }
+
+            // Extract description
+            const descMatch = content.match(/\{description\}\s*(.+?)(?=\{img\}|$)/);
+            if (descMatch) {
+                result.description = descMatch[1].trim();
+            }
+
+            // Extract image URL
+            const imgMatch = content.match(/\{img\}\s*([^\s]+)\s*\{img\}/);
+            if (imgMatch) {
+                result.imageUrl = imgMatch[1].trim();
+            }
+
+            return result;
+        }
+
+        // Format post content
+        function formatPostContent(content) {
+            return content
+                .replace(/\{bold\}([^{]+)\{bold\}/g, '<strong>$1</strong>')
+                .replace(/\{underline\}([^{]+)\{underline\}/g, '<u>$1</u>');
+        }
+
+        // Load posts
+        function loadPosts() {
+            if (!currentUser) {
+                addOutput('You must be logged in to view posts.', 'error');
+                return;
+            }
+
+            const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+            
+            onSnapshot(q, (querySnapshot) => {
+                const posts = [];
+                querySnapshot.forEach((doc) => {
+                    posts.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (posts.length === 0) {
+                    addOutput('No posts yet. Be the first to publish!', 'info');
+                    return;
+                }
+
+                addOutput(`Loading ${posts.length} posts...`, 'info');
+                
+                posts.forEach(post => {
+                    const postHtml = `
+                        <div class="post">
+                            <div class="post-header">
+                                <span class="post-author">${post.authorUsername}</span>
+                                <span class="post-handle">@${post.authorHandle}</span>
+                                <span class="post-time">${post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString() : 'Just now'}</span>
+                            </div>
+                            <div class="post-title">${post.title}</div>
+                            <div class="post-content">${formatPostContent(post.content)}</div>
+                            ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" alt="Post image">` : ''}
+                        </div>
+                    `;
+                    addOutput(postHtml);
+                });
+            });
+        }
+
+        // Clear output helper
+        window.clearOutput = function() {
+            // Remove the last auth form
+            const forms = output.querySelectorAll('.auth-form');
+            if (forms.length > 0) {
+                forms[forms.length - 1].remove();
+            }
+        };
+
+        // Input handler
+        commandInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const command = this.value.trim();
+                if (command) {
+                    executeCommand(command);
+                    this.value = '';
+                }
+            }
+        });
+
+        // Focus input on page load
+        commandInput.focus();
+    </script>
+</body>
+</html>
