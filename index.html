@@ -418,6 +418,14 @@
                 case 'logout':
                     logout();
                     break;
+                case '/post':
+                    if (args.length === 0) {
+                        addOutput('❌ Usage: /post {title}; {description};', 'error');
+                        addOutput('Example: /post Hello World **bold**; This is my first post __underline__;', 'info');
+                    } else {
+                        createPostWithFormat(args.join(' '));
+                    }
+                    break;
                 case 'post':
                     if (args.length === 0) {
                         addOutput('❌ Usage: post <message>', 'error');
@@ -427,6 +435,22 @@
                     break;
                 case 'posts':
                     loadPosts();
+                    break;
+                case 'like':
+                    if (args.length === 0) {
+                        addOutput('❌ Usage: like <post_id>', 'error');
+                    } else {
+                        likePost(args[0]);
+                    }
+                    break;
+                case 'comment':
+                    if (args.length < 2) {
+                        addOutput('❌ Usage: comment <post_id> <message>', 'error');
+                    } else {
+                        const postId = args[0];
+                        const commentText = args.slice(1).join(' ');
+                        addComment(postId, commentText);
+                    }
                     break;
                 case 'clear':
                     clearOutput();
@@ -439,10 +463,18 @@
         function showHelp() {
             addOutput('Available commands:', 'info');
             addOutput('  help - Show this help message');
-            addOutput('  post <message> - Create a new post');
+            addOutput('  /post {title}; {description}; - Create post with title and description');
+            addOutput('  post <message> - Create simple post');
             addOutput('  posts - Load recent posts');
+            addOutput('  like <post_id> - Like/unlike a post');
+            addOutput('  comment <post_id> <message> - Add comment to post');
             addOutput('  logout - Logout from the system');
             addOutput('  clear - Clear the console');
+            addOutput('');
+            addOutput('Post formatting:', 'info');
+            addOutput('  **bold** - Bold text');
+            addOutput('  __underline__ - Underlined text');
+            addOutput('  Example: /post Hello **World**; This is my __first__ post;');
         }
 
         function logout() {
@@ -460,21 +492,68 @@
         }
 
         // Posts functions
-        async function createPost(content) {
+        function createPostWithFormat(input) {
             if (!currentUser) {
                 addOutput('❌ You must be logged in to post.', 'error');
                 return;
             }
             
+            console.log('Creating post with format:', input);
+            
+            // Parse format: {title}; {description};
+            const parts = input.split(';').map(part => part.trim());
+            
+            if (parts.length < 2 || !parts[0] || !parts[1]) {
+                addOutput('❌ Invalid format. Use: /post {title}; {description};', 'error');
+                addOutput('Example: /post Hello World; This is my first post;', 'info');
+                return;
+            }
+            
+            const title = parts[0];
+            const description = parts[1];
+            
+            // Process formatting
+            const processedTitle = processTextFormatting(title);
+            const processedDescription = processTextFormatting(description);
+            
+            addOutput('📝 Creating post...', 'info');
+            createPost(processedTitle, processedDescription);
+        }
+        
+        function processTextFormatting(text) {
+            // Convert **text** to bold and __text__ to underline
+            let processed = text;
+            processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            processed = processed.replace(/__(.*?)__/g, '<u>$1</u>');
+            return processed;
+        }
+
+        async function createPost(titleOrContent, description = null) {
+            if (!currentUser) {
+                addOutput('❌ You must be logged in to post.', 'error');
+                return;
+            }
+            
+            console.log('Creating post with user:', currentUser);
+            console.log('Title/Content:', titleOrContent);
+            console.log('Description:', description);
+            
             try {
-                await db.collection(POSTS_COLLECTION).add({
-                    content: content,
+                const postData = {
+                    content: description || titleOrContent,
+                    title: description ? titleOrContent : null,
                     author: currentUser.displayName || currentUser.email,
                     authorId: currentUser.uid,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     likes: 0,
+                    likedBy: [],
                     comments: []
-                });
+                };
+                
+                console.log('Post data to save:', postData);
+                
+                const docRef = await db.collection(POSTS_COLLECTION).add(postData);
+                console.log('Post saved with ID:', docRef.id);
                 
                 // Update user's post count
                 await db.collection(USERS_COLLECTION).doc(currentUser.uid).update({
@@ -482,19 +561,36 @@
                 });
                 
                 addOutput('✅ Post created successfully!', 'success');
-                loadPosts();
+                setTimeout(() => loadPosts(), 1000); // Wait a bit for Firebase to sync
             } catch (error) {
                 console.error('Error creating post:', error);
-                addOutput('❌ Failed to create post.', 'error');
+                addOutput(`❌ Failed to create post: ${error.message}`, 'error');
+                
+                // Additional debugging
+                if (error.code) {
+                    addOutput(`Error code: ${error.code}`, 'error');
+                }
+                
+                // Test Firebase connection
+                try {
+                    await db.collection('test').add({ test: true });
+                    addOutput('Firebase connection is working', 'info');
+                } catch (testError) {
+                    addOutput(`Firebase connection failed: ${testError.message}`, 'error');
+                }
             }
         }
 
         async function loadPosts() {
+            console.log('Loading posts...');
+            
             try {
                 const postsSnapshot = await db.collection(POSTS_COLLECTION)
                     .orderBy('timestamp', 'desc')
                     .limit(10)
                     .get();
+                
+                console.log('Posts snapshot size:', postsSnapshot.size);
                 
                 if (postsSnapshot.empty) {
                     addOutput('📝 No posts yet. Be the first to post!', 'info');
@@ -502,17 +598,143 @@
                 }
                 
                 addOutput('📄 Recent Posts:', 'info');
-                postsSnapshot.forEach(doc => {
+                addOutput('', '');
+                
+                postsSnapshot.forEach((doc, index) => {
                     const post = doc.data();
+                    const postId = doc.id;
                     const timestamp = post.timestamp ? post.timestamp.toDate().toLocaleString() : 'Just now';
-                    addOutput(`👤 ${post.author} (${timestamp})`);
-                    addOutput(`   ${post.content}`);
-                    addOutput(`   ❤️ ${post.likes} likes | 💬 ${post.comments?.length || 0} comments`);
-                    addOutput('');
+                    
+                    console.log('Post data:', post);
+                    
+                    // Post header
+                    addOutput(`� Post #${index + 1} (ID: ${postId})`, 'info');
+                    addOutput(`�👤 ${post.author} • ${timestamp}`);
+                    
+                    // Title (if exists)
+                    if (post.title) {
+                        addOutput(`📝 ${post.title}`);
+                    }
+                    
+                    // Content
+                    addOutput(`💬 ${post.content}`);
+                    
+                    // Stats
+                    const likesCount = post.likes || 0;
+                    const commentsCount = post.comments ? post.comments.length : 0;
+                    addOutput(`❤️ ${likesCount} likes | 💬 ${commentsCount} comments`);
+                    
+                    // Recent comments
+                    if (post.comments && post.comments.length > 0) {
+                        const recentComments = post.comments.slice(-2);
+                        recentComments.forEach(comment => {
+                            addOutput(`  💬 ${comment.author}: ${comment.content}`, 'info');
+                        });
+                    }
+                    
+                    addOutput('', ''); // Empty line between posts
                 });
+                
             } catch (error) {
                 console.error('Error loading posts:', error);
-                addOutput('❌ Failed to load posts.', 'error');
+                addOutput(`❌ Failed to load posts: ${error.message}`, 'error');
+                
+                // Try to test Firebase connection
+                try {
+                    const testDoc = await db.collection('test').doc('connection-test').set({
+                        test: true,
+                        timestamp: new Date()
+                    });
+                    addOutput('✅ Firebase connection test successful', 'success');
+                } catch (testError) {
+                    addOutput(`❌ Firebase connection failed: ${testError.message}`, 'error');
+                }
+            }
+        }
+
+        // Like and Comment functions
+        async function likePost(postId) {
+            if (!currentUser) {
+                addOutput('❌ You must be logged in to like posts.', 'error');
+                return;
+            }
+            
+            console.log('Liking post:', postId);
+            
+            try {
+                const postRef = db.collection(POSTS_COLLECTION).doc(postId);
+                const postDoc = await postRef.get();
+                
+                if (!postDoc.exists) {
+                    addOutput('❌ Post not found.', 'error');
+                    return;
+                }
+                
+                const postData = postDoc.data();
+                const likedBy = postData.likedBy || [];
+                const userAlreadyLiked = likedBy.includes(currentUser.uid);
+                
+                if (userAlreadyLiked) {
+                    // Unlike
+                    await postRef.update({
+                        likes: firebase.firestore.FieldValue.increment(-1),
+                        likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
+                    });
+                    addOutput('💔 Post unliked!', 'success');
+                } else {
+                    // Like
+                    await postRef.update({
+                        likes: firebase.firestore.FieldValue.increment(1),
+                        likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+                    });
+                    addOutput('❤️ Post liked!', 'success');
+                }
+                
+                // Reload posts to show updated likes
+                setTimeout(() => loadPosts(), 500);
+                
+            } catch (error) {
+                console.error('Error liking post:', error);
+                addOutput(`❌ Failed to like post: ${error.message}`, 'error');
+            }
+        }
+        
+        async function addComment(postId, commentText) {
+            if (!currentUser) {
+                addOutput('❌ You must be logged in to comment.', 'error');
+                return;
+            }
+            
+            console.log('Adding comment to post:', postId, 'Text:', commentText);
+            
+            try {
+                const postRef = db.collection(POSTS_COLLECTION).doc(postId);
+                const postDoc = await postRef.get();
+                
+                if (!postDoc.exists) {
+                    addOutput('❌ Post not found.', 'error');
+                    return;
+                }
+                
+                const comment = {
+                    author: currentUser.displayName || currentUser.email,
+                    authorId: currentUser.uid,
+                    content: processTextFormatting(commentText),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                await postRef.update({
+                    comments: firebase.firestore.FieldValue.arrayUnion(comment)
+                });
+                
+                addOutput('💬 Comment added!', 'success');
+                
+                // Reload posts to show new comment
+                setTimeout(() => loadPosts(), 500);
+                
+            } catch (error) {
+                console.error('Error adding comment:', error);
+                addOutput(`❌ Failed to add comment: ${error.message}`, 'error');
             }
         }
 
