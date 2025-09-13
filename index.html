@@ -12,20 +12,20 @@
         }
 
         body {
-            background-color: #0d1117;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
             color: #c9d1d9;
-            font-family: 'Courier New', 'Monaco', 'Lucida Console', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .console-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 20px;
         }
 
         .console-header {
@@ -75,10 +75,6 @@
             outline: none;
         }
 
-        .console-input::placeholder {
-            color: #7d8590;
-        }
-
         .output-line {
             margin-bottom: 8px;
             padding: 2px 0;
@@ -98,103 +94,6 @@
 
         .output-warning {
             color: #f0883e;
-        }
-
-        .post {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 15px;
-            margin: 10px 0;
-        }
-
-        .post-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            color: #7d8590;
-            font-size: 12px;
-        }
-
-        .post-author {
-            color: #58a6ff;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .post-handle {
-            color: #7d8590;
-            margin-right: 10px;
-        }
-
-        .post-time {
-            color: #7d8590;
-        }
-
-        .post-title {
-            color: #f0f6fc;
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-
-        .post-content {
-            color: #c9d1d9;
-            line-height: 1.5;
-        }
-
-        .post-content strong {
-            color: #f0f6fc;  
-            font-weight: bold;
-        }
-
-        .post-content u {
-            text-decoration: underline;
-        }
-
-        .post-image {
-            max-width: 100%;
-            border-radius: 6px;
-            margin: 10px 0;
-        }
-
-        .post-stats {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #7d8590;
-            display: flex;
-            gap: 15px;
-            border-top: 1px solid #30363d;
-            padding-top: 8px;
-        }
-
-        .post-comments {
-            margin-top: 10px;
-            border-top: 1px solid #30363d;
-            padding-top: 8px;
-        }
-
-        .comment {
-            font-size: 12px;
-            color: #7d8590;
-            margin-bottom: 4px;
-        }
-
-        .comment-author {
-            color: #58a6ff;
-        }
-
-        .post[data-post-id]:hover {
-            border-color: #58a6ff;
-            transform: translateY(-1px);
-            transition: all 0.2s ease;
-        }
-
-        .post-id-hint {
-            font-size: 11px;
-            color: #7d8590;
-            font-style: italic;
-            margin-left: auto;
         }
 
         .auth-form {
@@ -249,23 +148,8 @@
             background: #2ea043;
         }
 
-        .form-button.secondary {
-            background: #21262d;
-            border: 1px solid #30363d;
-        }
-
-        .form-button.secondary:hover {
-            background: #30363d;
-        }
-
         .hidden {
             display: none;
-        }
-
-        .command-help {
-            color: #7d8590;
-            font-style: italic;
-            margin: 5px 0;
         }
 
         /* Scrollbar styling */
@@ -294,24 +178,65 @@
             <div class="console-subtitle">Social Network for Developers</div>
         </div>
 
-        <div class="console-output" id="output">
-            <div class="output-line output-info">Welcome to DevConsole! Type 'help' for available commands.</div>
-            <div class="output-line">Please login or register to start using the social network.</div>
+        <!-- Login/Register Section -->
+        <div id="authSection" class="auth-form">
+            <div id="loginForm">
+                <h3 style="color: #58a6ff; margin-bottom: 20px; text-align: center;">Login</h3>
+                <form id="loginFormElement">
+                    <div class="form-group">
+                        <label class="form-label" for="loginEmail">Email:</label>
+                        <input type="email" class="form-input" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword">Password:</label>
+                        <input type="password" class="form-input" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="form-button">Login</button>
+                    <button type="button" class="form-button" onclick="showRegisterForm()">Create Account</button>
+                </form>
+            </div>
+
+            <div id="registerForm" class="hidden">
+                <h3 style="color: #58a6ff; margin-bottom: 20px; text-align: center;">Register</h3>
+                <form id="registerFormElement">
+                    <div class="form-group">
+                        <label class="form-label" for="regEmail">Email:</label>
+                        <input type="email" class="form-input" id="regEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regPassword">Password:</label>
+                        <input type="password" class="form-input" id="regPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regUsername">Username:</label>
+                        <input type="text" class="form-input" id="regUsername" required>
+                    </div>
+                    <button type="submit" class="form-button">Register</button>
+                    <button type="button" class="form-button" onclick="showLoginForm()">Back to Login</button>
+                </form>
+            </div>
         </div>
 
-        <div class="console-input-container">
-            <span class="console-prompt" id="prompt">guest@devconsole:~$</span>
-            <input type="text" class="console-input" id="commandInput" placeholder="Type a command..." autocomplete="off">
+        <!-- Main App Section (hidden initially) -->
+        <div id="mainApp" class="hidden">
+            <div class="console-output" id="output">
+                <div class="output-line output-success">Welcome to DevConsole! You are now logged in.</div>
+            </div>
+
+            <div class="console-input-container">
+                <span class="console-prompt" id="prompt">user@devconsole:~$</span>
+                <input type="text" class="console-input" id="commandInput" placeholder="Type a command..." autocomplete="off">
+            </div>
         </div>
     </div>
 
     <!-- Firebase SDK -->
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
 
-        // Firebase configuration
+    <script>
+        // Firebase configuration (same as PokePoint)
         const firebaseConfig = {
             apiKey: "AIzaSyAexCf7hPN2OQvfsw66UDpci6nycivrK98",
             authDomain: "void-activation-system.firebaseapp.com",
@@ -324,1039 +249,282 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
         // Global variables
         let currentUser = null;
-        let userProfile = null;
-        let isOnline = navigator.onLine;
-        let firebaseConnected = true;
-        let retryAttempts = 0;
-        const MAX_RETRY_ATTEMPTS = 3;
 
-        // Network status monitoring
-        window.addEventListener('online', () => {
-            isOnline = true;
-            addOutput('🌐 Connection restored!', 'success');
+        // Collection names
+        const USERS_COLLECTION = 'devsocial-users';
+        const POSTS_COLLECTION = 'devsocial-posts';
+
+        // UI Functions
+        function showLoginForm() {
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        function showMainApp() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            updatePrompt();
+            loadPosts();
+        }
+
+        function showAuthSection() {
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('authSection').classList.remove('hidden');
+        }
+
+        function updatePrompt() {
+            const prompt = document.getElementById('prompt');
+            if (currentUser) {
+                prompt.textContent = `${currentUser.displayName || currentUser.email}@devconsole:~$`;
+            } else {
+                prompt.textContent = 'guest@devconsole:~$';
+            }
+        }
+
+        // Authentication
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            if (user) {
+                console.log('User logged in:', user.email);
+                showMainApp();
+            } else {
+                console.log('User logged out');
+                showAuthSection();
+            }
         });
 
-        window.addEventListener('offline', () => {
-            isOnline = false;
-            addOutput('📡 Connection lost. Working offline...', 'warning');
+        // Login Form Handler
+        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Logging in...';
+            submitBtn.disabled = true;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    addOutput('✅ Login successful!', 'success');
+                    this.reset();
+                })
+                .catch((error) => {
+                    console.error('Login error:', error);
+                    addOutput(`❌ Login failed: ${error.message}`, 'error');
+                })
+                .finally(() => {
+                    submitBtn.textContent = 'Login';
+                    submitBtn.disabled = false;
+                });
         });
 
-        // DOM elements
-        const output = document.getElementById('output');
-        const commandInput = document.getElementById('commandInput');
-        const prompt = document.getElementById('prompt');
-
-        // Simple session management
-        function checkCurrentUser() {
-            const sessionUser = localStorage.getItem('devconsole_user');
-            if (sessionUser) {
-                try {
-                    const userData = JSON.parse(sessionUser);
-                    currentUser = userData;
-                    userProfile = userData;
-                    prompt.textContent = `${userData.username}@devconsole:~$`;
-                    addOutput(`Welcome back, ${userData.username}!`, 'success');
-                    
-                    // Try to load posts if online, otherwise show offline message
-                    if (isOnline) {
-                        loadPosts();
-                    } else {
-                        addOutput('📡 You are offline. Posts will load when connection is restored.', 'warning');
-                    }
-                } catch (error) {
-                    localStorage.removeItem('devconsole_user');
-                    addOutput('⚠️ Session data corrupted, please login again.', 'warning');
-                }
+        // Register Form Handler
+        document.getElementById('registerFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const username = document.getElementById('regUsername').value;
+            
+            if (username.length < 2) {
+                alert('Username must be at least 2 characters long.');
+                return;
             }
-        }
-
-        // Initialize on page load
-        checkCurrentUser();
-
-        // Test Firebase connectivity
-        async function testFirebaseConnection() {
-            try {
-                // Try to read a simple document to test connection
-                const testDoc = await getDoc(doc(db, 'devsocial-system', 'test'));
-                firebaseConnected = true;
-                retryAttempts = 0;
-                return true;
-            } catch (error) {
-                console.log('Firebase connection test failed:', error);
-                firebaseConnected = false;
-                return false;
-            }
-        }
-
-        // Auto-retry function for failed operations
-        async function retryOperation(operation, maxRetries = MAX_RETRY_ATTEMPTS) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    return await operation();
-                } catch (error) {
-                    console.log(`Attempt ${i + 1} failed:`, error);
-                    if (i === maxRetries - 1) throw error;
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Creating account...';
+            submitBtn.disabled = true;
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
                     
-                    // Wait before retry (exponential backoff)
-                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    
-                    // Test connection before retry
-                    addOutput(`🔄 Retrying in ${delay/1000}s... (${i + 1}/${maxRetries})`, 'warning');
-                    await testFirebaseConnection();
-                }
-            }
-        }
+                    // Update user profile with username
+                    return user.updateProfile({
+                        displayName: username
+                    }).then(() => {
+                        // Create user document in Firestore
+                        return db.collection(USERS_COLLECTION).doc(user.uid).set({
+                            username: username,
+                            email: email,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            postCount: 0
+                        });
+                    });
+                })
+                .then(() => {
+                    alert('Account created successfully!');
+                    this.reset();
+                    showLoginForm();
+                })
+                .catch((error) => {
+                    console.error('Registration error:', error);
+                    alert(`Registration failed: ${error.message}`);
+                })
+                .finally(() => {
+                    submitBtn.textContent = 'Register';
+                    submitBtn.disabled = false;
+                });
+        });
 
-        // Add output to console
+        // Output functions
         function addOutput(text, type = '') {
+            const output = document.getElementById('output');
+            if (!output) return;
+            
             const line = document.createElement('div');
             line.className = `output-line ${type ? 'output-' + type : ''}`;
-            line.innerHTML = text;
+            line.textContent = text;
             output.appendChild(line);
             output.scrollTop = output.scrollHeight;
         }
 
-        // Parse and execute commands
-        function executeCommand(command) {
-            const args = command.trim().split(' ');
-            const cmd = args[0].toLowerCase();
+        // Command system
+        const commandInput = document.getElementById('commandInput');
+        
+        if (commandInput) {
+            commandInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const command = this.value.trim();
+                    if (command) {
+                        handleCommand(command);
+                        this.value = '';
+                    }
+                }
+            });
+        }
 
-            addOutput(`${prompt.textContent} ${command}`);
-
+        function handleCommand(command) {
+            addOutput(`${document.getElementById('prompt').textContent} ${command}`);
+            
+            const [cmd, ...args] = command.split(' ');
+            
             switch (cmd) {
                 case 'help':
                     showHelp();
                     break;
-                case 'login':
-                    showLoginForm();
-                    break;
-                case '/login':
-                    handleLoginCommand(command);
-                    break;
-                case 'register':
-                    showRegisterForm();
-                    break;
-                case '/register':
-                    handleRegisterCommand(command);
-                    break;
-                case '/reg':
-                    handleRegisterCommand(command.replace('/reg', '/register'));
-                    break;
                 case 'logout':
-                    handleLogout();
+                    logout();
                     break;
-                case '/post':
-                    handlePublish(command);
-                    break;
-                case '/like':
-                    handleLike(command);
-                    break;
-                case '/deslike':
-                    handleDeslike(command);
-                    break;
-                case '/comment':
-                    handleComment(command);
-                    break;
-                case 'clear':
-                    output.innerHTML = '';
+                case 'post':
+                    if (args.length === 0) {
+                        addOutput('❌ Usage: post <message>', 'error');
+                    } else {
+                        createPost(args.join(' '));
+                    }
                     break;
                 case 'posts':
                     loadPosts();
                     break;
-                case 'status':
-                    checkStatus();
-                    break;
-                case 'test':
-                    testConnection();
-                    break;
-                case 'reset':
-                    resetLocalData();
+                case 'clear':
+                    clearOutput();
                     break;
                 default:
-                    addOutput(`Command not found: ${cmd}. Type 'help' for available commands.`, 'error');
+                    addOutput(`❌ Unknown command: ${cmd}. Type 'help' for available commands.`, 'error');
             }
         }
 
-        // Show help
         function showHelp() {
             addOutput('Available commands:', 'info');
             addOutput('  help - Show this help message');
-            addOutput('  login - Login to your account with form');
-            addOutput('  /login [username] [password] - Quick login');
-            addOutput('  register - Create account with form');
-            addOutput('  /register [username] [password] - Quick register');
-            addOutput('  /reg [username] [password] - Quick register (alias)');
-            addOutput('  logout - Logout from your account');
+            addOutput('  post <message> - Create a new post');
             addOutput('  posts - Load recent posts');
-            addOutput('  status - Check connection status');
-            addOutput('  test - Test Firebase connectivity');
-            addOutput('  reset - Clear local data and logout');
+            addOutput('  logout - Logout from the system');
             addOutput('  clear - Clear the console');
-            if (currentUser) {
-                addOutput('  /post {title} Title - Create a post with just title');
-                addOutput('  /post {description} Description - Create a post with just description');
-                addOutput('  /post {img} image-url - Create a post with just image');
-                addOutput('  /post {title} Title; {description} Description - Post with title and description');
-                addOutput('  /post {title} Title; {description} Description {bold}bold{bold} {underline}underline{underline}');
-                addOutput('  /post {title} Title; {description} Description; {img} image-url');
-                addOutput('  /like [post-id] - Like a post (right-click post to copy ID)');
-                addOutput('  /deslike [post-id] - Remove like from a post');
-                addOutput('  /comment [post-id] [message] - Comment on a post');
-            }
         }
 
-        // Show login form
-        function showLoginForm() {
-            if (currentUser) {
-                addOutput('You are already logged in!', 'warning');
-                return;
-            }
-
-            const formHtml = `
-                <div class="auth-form">
-                    <h3 style="color: #f0f6fc; margin-bottom: 15px;">Login</h3>
-                    <div class="form-group">
-                        <label class="form-label">Username:</label>
-                        <input type="text" class="form-input" id="loginUsername" placeholder="Your username">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Password:</label>
-                        <input type="password" class="form-input" id="loginPassword" placeholder="Password">
-                    </div>
-                    <button class="form-button" onclick="performLogin()">Login</button>
-                    <button class="form-button secondary" onclick="clearOutput()">Cancel</button>
-                </div>
-            `;
-            addOutput(formHtml);
-        }
-
-        // Show register form
-        function showRegisterForm() {
-            if (currentUser) {
-                addOutput('You are already logged in!', 'warning');
-                return;
-            }
-
-            const formHtml = `
-                <div class="auth-form">
-                    <h3 style="color: #f0f6fc; margin-bottom: 15px;">Register</h3>
-                    <div class="form-group">
-                        <label class="form-label">Username:</label>
-                        <input type="text" class="form-input" id="regUsername" placeholder="Your username (letters, numbers, _)">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Password:</label>
-                        <input type="password" class="form-input" id="regPassword" placeholder="Password (min 3 characters)">
-                    </div>
-                    <button class="form-button" onclick="performRegister()">Register</button>
-                    <button class="form-button secondary" onclick="clearOutput()">Cancel</button>
-                </div>
-            `;
-            addOutput(formHtml);
-        }
-
-        // Perform login
-        window.performLogin = async function() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            if (!username || !password) {
-                addOutput('Please fill in username and password.', 'error');
-                return;
-            }
-
-            try {
-                // Check if user exists in Firestore
-                const userDoc = await getDoc(doc(db, 'devsocial-users', username.toLowerCase()));
-                
-                if (!userDoc.exists()) {
-                    addOutput(`Username "${username}" not found.`, 'error');
-                    return;
-                }
-
-                const userData = userDoc.data();
-                
-                // Check password
-                if (userData.password !== password) {
-                    addOutput('Incorrect password.', 'error');
-                    return;
-                }
-
-                // Login successful
-                currentUser = userData;
-                userProfile = userData;
-                prompt.textContent = `${userData.username}@devconsole:~$`;
-                
-                // Save to localStorage for session persistence
-                localStorage.setItem('devconsole_user', JSON.stringify(userData));
-                
-                addOutput('Login successful!', 'success');
+        function logout() {
+            auth.signOut().then(() => {
+                addOutput('👋 Logged out successfully!', 'success');
                 clearOutput();
-                loadPosts();
-                
-            } catch (error) {
-                addOutput(`Login failed: ${error.message}`, 'error');
-            }
-        };
+            });
+        }
 
-        // Handle login command
-        async function handleLoginCommand(command) {
-            if (currentUser) {
-                addOutput('You are already logged in! Use logout first.', 'warning');
-                return;
-            }
-
-            const args = command.trim().split(' ');
-            if (args.length < 3) {
-                addOutput('Usage: /login [username] [password]', 'error');
-                addOutput('Example: /login johndoe mypassword123', 'info');
-                return;
-            }
-
-            const username = args[1];
-            const password = args[2];
-
-            try {
-                // Test connection first
-                if (!isOnline) {
-                    addOutput('📡 No internet connection. Please check your network.', 'error');
-                    return;
-                }
-
-                addOutput('🔍 Checking credentials...', 'info');
-
-                const loginOperation = async () => {
-                    // Check if user exists in Firestore
-                    const userDoc = await getDoc(doc(db, 'devsocial-users', username.toLowerCase()));
-                    
-                    if (!userDoc.exists()) {
-                        throw new Error(`USER_NOT_FOUND:Username "${username}" not found.`);
-                    }
-
-                    const userData = userDoc.data();
-                    
-                    // Check password
-                    if (userData.password !== password) {
-                        throw new Error('WRONG_PASSWORD:Incorrect password.');
-                    }
-
-                    return userData;
-                };
-
-                const userData = await retryOperation(loginOperation);
-
-                // Login successful
-                currentUser = userData;
-                userProfile = userData;
-                prompt.textContent = `${userData.username}@devconsole:~$`;
-                
-                // Save to localStorage for session persistence
-                localStorage.setItem('devconsole_user', JSON.stringify(userData));
-                
-                addOutput('🎉 Login successful!', 'success');
-                loadPosts();
-                
-            } catch (error) {
-                let errorMessage = 'Login failed: ';
-                
-                // Handle specific errors
-                if (error.message.startsWith('USER_NOT_FOUND:')) {
-                    addOutput(error.message.replace('USER_NOT_FOUND:', ''), 'error');
-                    addOutput('💡 Use /register [username] [password] to create account', 'info');
-                    return;
-                } else if (error.message.startsWith('WRONG_PASSWORD:')) {
-                    addOutput(error.message.replace('WRONG_PASSWORD:', ''), 'error');
-                    return;
-                }
-                
-                if (!isOnline) {
-                    errorMessage = '📡 Login failed: No internet connection. Please check your network.';
-                } else if (error.message.includes('offline') || error.message.includes('network')) {
-                    errorMessage = '📡 Login failed: Cannot connect to server. Check your internet connection.';
-                } else {
-                    errorMessage += error.message;
-                }
-                addOutput(errorMessage, 'error');
+        function clearOutput() {
+            const output = document.getElementById('output');
+            if (output) {
+                output.innerHTML = '';
             }
         }
 
-        // Perform registration
-        window.performRegister = async function() {
-            const username = document.getElementById('regUsername').value.trim();
-            const password = document.getElementById('regPassword').value;
-
-            // Validation
-            if (!username || !password) {
-                addOutput('Please fill in username and password.', 'error');
-                return;
-            }
-
-            if (username.length < 2) {
-                addOutput('Username must be at least 2 characters long.', 'error');
-                return;
-            }
-
-            if (password.length < 3) {
-                addOutput('Password must be at least 3 characters long.', 'error');
-                return;
-            }
-
-            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-                addOutput('Username can only contain letters, numbers, and underscores.', 'error');
-                return;
-            }
-
-            try {
-                // Check if username already exists
-                const userDoc = await getDoc(doc(db, 'devsocial', 'users', username.toLowerCase()));
-                if (userDoc.exists()) {
-                    addOutput('Username already taken. Please choose another one.', 'error');
-                    return;
-                }
-
-                // Create user data
-                const userData = {
-                    id: username.toLowerCase(),
-                    username: username,
-                    password: password,
-                    createdAt: new Date(),
-                    postCount: 0,
-                    joinedDate: new Date().toLocaleDateString()
-                };
-
-                // Save user to Firestore
-                await setDoc(doc(db, 'devsocial-users', username.toLowerCase()), userData);
-
-                // Login the user automatically
-                currentUser = userData;
-                userProfile = userData;
-                prompt.textContent = `${username}@devconsole:~$`;
-                
-                // Save to localStorage for session persistence
-                localStorage.setItem('devconsole_user', JSON.stringify(userData));
-
-                addOutput('Registration successful! You are now logged in.', 'success');
-                addOutput(`Welcome to DevConsole, ${username}!`, 'info');
-                clearOutput();
-            } catch (error) {
-                addOutput(`Registration failed: ${error.message}`, 'error');
-            }
-        };
-
-        // Handle register command
-        async function handleRegisterCommand(command) {
-            if (currentUser) {
-                addOutput('You are already logged in! Use logout first.', 'warning');
-                return;
-            }
-
-            const args = command.trim().split(' ');
-            if (args.length < 3) {
-                addOutput('Usage: /register [username] [password]', 'error');
-                addOutput('Example: /register johndoe mypassword123', 'info');
-                return;
-            }
-
-            const username = args[1];
-            const password = args[2];
-
-            // Validation
-            if (username.length < 2) {
-                addOutput('Username must be at least 2 characters long.', 'error');
-                return;
-            }
-
-            if (password.length < 3) {
-                addOutput('Password must be at least 3 characters long.', 'error');
-                return;
-            }
-
-            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-                addOutput('Username can only contain letters, numbers, and underscores.', 'error');
-                return;
-            }
-
-            try {
-                // Test connection first
-                if (!isOnline) {
-                    addOutput('📡 No internet connection. Please check your network.', 'error');
-                    return;
-                }
-
-                addOutput('🔄 Checking if username is available...', 'info');
-
-                const registerOperation = async () => {
-                    // Check if username already exists
-                    const userDoc = await getDoc(doc(db, 'devsocial-users', username.toLowerCase()));
-                    if (userDoc.exists()) {
-                        throw new Error(`USERNAME_EXISTS:Username "${username}" is already taken. Please choose another one.`);
-                    }
-
-                    // Create user data
-                    const userData = {
-                        id: username.toLowerCase(),
-                        username: username,
-                        password: password,
-                        createdAt: new Date(),
-                        postCount: 0,
-                        joinedDate: new Date().toLocaleDateString()
-                    };
-
-                    // Save user to Firestore
-                    await setDoc(doc(db, 'devsocial-users', username.toLowerCase()), userData);
-                    return userData;
-                };
-
-                const userData = await retryOperation(registerOperation);
-
-                // Login the user automatically
-                currentUser = userData;
-                userProfile = userData;
-                prompt.textContent = `${username}@devconsole:~$`;
-                
-                // Save to localStorage for session persistence
-                localStorage.setItem('devconsole_user', JSON.stringify(userData));
-
-                addOutput('🎉 Registration successful! You are now logged in.', 'success');
-                addOutput(`Welcome to DevConsole, ${username}!`, 'info');
-                
-            } catch (error) {
-                let errorMessage = 'Registration failed: ';
-                
-                // Handle specific errors
-                if (error.message.startsWith('USERNAME_EXISTS:')) {
-                    addOutput(error.message.replace('USERNAME_EXISTS:', ''), 'error');
-                    return;
-                }
-                
-                // Network-specific error handling
-                if (!isOnline) {
-                    errorMessage = '📡 Registration failed: No internet connection. Please check your network.';
-                } else if (error.message.includes('offline') || error.message.includes('network')) {
-                    errorMessage = '📡 Registration failed: Cannot connect to server. Check your internet connection.';
-                    addOutput('🔧 Troubleshooting tips:', 'info');
-                    addOutput('  • Check your internet connection', 'info');
-                    addOutput('  • Try refreshing the page', 'info');
-                    addOutput('  • Disable VPN if using one', 'info');
-                } else if (error.code === 'unavailable' || error.message.includes('UNAVAILABLE')) {
-                    errorMessage = '🔄 Registration failed: Firebase service temporarily unavailable. Please try again.';
-                } else if (error.code === 'cancelled' || error.message.includes('cancelled')) {
-                    errorMessage = '⏱️ Registration failed: Request timeout. Please try again.';
-                } else {
-                    errorMessage += error.message;
-                    addOutput('🐛 Debug info: ' + error.code || 'unknown', 'warning');
-                }
-                
-                addOutput(errorMessage, 'error');
-                addOutput('💡 Tip: Try /reg [username] [password] for quick retry', 'info');
-                addOutput('💡 Or try: refresh page and try again', 'info');
-            }
-        }
-
-        // Handle logout
-        async function handleLogout() {
+        // Posts functions
+        async function createPost(content) {
             if (!currentUser) {
-                addOutput('You are not logged in.', 'warning');
+                addOutput('❌ You must be logged in to post.', 'error');
                 return;
             }
-
-            try {
-                // Clear session
-                currentUser = null;
-                userProfile = null;
-                prompt.textContent = 'guest@devconsole:~$';
-                localStorage.removeItem('devconsole_user');
-                
-                addOutput('Logged out successfully.', 'success');
-                output.innerHTML = '<div class="output-line output-info">Welcome to DevConsole! Type \'help\' for available commands.</div>';
-            } catch (error) {
-                addOutput(`Logout failed: ${error.message}`, 'error');
-            }
-        }
-
-        // Handle publish command
-        async function handlePublish(command) {
-            if (!currentUser) {
-                addOutput('You must be logged in to publish posts.', 'error');
-                return;
-            }
-
-            // Parse the command
-            const content = command.substring(6); // Remove '/post '
             
-            if (!content.trim()) {
-                addOutput('Usage examples:', 'error');
-                addOutput('  /post {title} My awesome title', 'info');
-                addOutput('  /post {description} Just sharing my thoughts', 'info');
-                addOutput('  /post {img} https://example.com/image.jpg', 'info');
-                addOutput('  /post {title} Title; {description} Description', 'info');
-                return;
-            }
-
             try {
-                const parsed = parsePublishCommand(content);
-                
-                // Check if at least one field is provided
-                if (!parsed.title && !parsed.description && !parsed.imageUrl) {
-                    addOutput('Please provide at least a title, description, or image.', 'error');
-                    return;
-                }
-
-                // Generate automatic title or description if missing
-                let finalTitle = parsed.title;
-                let finalDescription = parsed.description;
-
-                if (!finalTitle && !finalDescription && parsed.imageUrl) {
-                    finalTitle = 'Shared an image';
-                    finalDescription = '';
-                } else if (!finalTitle && finalDescription) {
-                    finalTitle = finalDescription.length > 30 ? 
-                        finalDescription.substring(0, 30) + '...' : 
-                        finalDescription;
-                } else if (finalTitle && !finalDescription) {
-                    finalDescription = '';
-                }
-
-                // Save post to Firestore
-                await addDoc(collection(db, 'devsocial-posts'), {
-                    title: finalTitle || 'Untitled Post',
-                    content: finalDescription,
-                    imageUrl: parsed.imageUrl || '',
-                    authorId: currentUser.id,
-                    authorUsername: userProfile.username,
-                    authorHandle: userProfile.username,
-                    createdAt: serverTimestamp(),
+                await db.collection(POSTS_COLLECTION).add({
+                    content: content,
+                    author: currentUser.displayName || currentUser.email,
+                    authorId: currentUser.uid,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     likes: 0,
-                    likedBy: []
+                    comments: []
                 });
-
-                // Update user post count
-                const userRef = doc(db, 'devsocial-users', currentUser.id);
-                const userDoc = await getDoc(userRef);
-                if (userDoc.exists()) {
-                    const currentCount = userDoc.data().postCount || 0;
-                    await setDoc(userRef, { postCount: currentCount + 1 }, { merge: true });
-                }
-
-                addOutput('Post published successfully! 🚀', 'success');
                 
-                // Show what was posted
-                const postedContent = [];
-                if (finalTitle) postedContent.push(`Title: "${finalTitle}"`);
-                if (finalDescription) postedContent.push(`Description: "${finalDescription}"`);
-                if (parsed.imageUrl) postedContent.push(`Image: ${parsed.imageUrl}`);
+                // Update user's post count
+                await db.collection(USERS_COLLECTION).doc(currentUser.uid).update({
+                    postCount: firebase.firestore.FieldValue.increment(1)
+                });
                 
-                addOutput(`Posted: ${postedContent.join(', ')}`, 'info');
-                
-                setTimeout(() => loadPosts(), 500); // Small delay to ensure post is saved
-            } catch (error) {
-                addOutput(`Failed to publish post: ${error.message}`, 'error');
-            }
-        }
-
-        // Parse publish command
-        function parsePublishCommand(content) {
-            const result = {
-                title: '',
-                description: '',
-                imageUrl: ''
-            };
-
-            // Split by semicolon to separate different parts
-            const parts = content.split(';');
-            
-            parts.forEach(part => {
-                part = part.trim();
-                
-                // Extract title
-                const titleMatch = part.match(/\{title\}\s*(.+)/);
-                if (titleMatch) {
-                    result.title = titleMatch[1].trim();
-                }
-                
-                // Extract description
-                const descMatch = part.match(/\{description\}\s*(.+)/);
-                if (descMatch) {
-                    result.description = descMatch[1].trim();
-                }
-                
-                // Extract image URL (both {img} url and {img} url {img} formats)
-                const imgMatch1 = part.match(/\{img\}\s*([^\s\{]+)\s*\{img\}/);
-                const imgMatch2 = part.match(/\{img\}\s*([^\s\{]+)$/);
-                
-                if (imgMatch1) {
-                    result.imageUrl = imgMatch1[1].trim();
-                } else if (imgMatch2) {
-                    result.imageUrl = imgMatch2[1].trim();
-                }
-            });
-
-            return result;
-        }
-
-        // Handle like command
-        async function handleLike(command) {
-            if (!currentUser) {
-                addOutput('You must be logged in to like posts.', 'error');
-                return;
-            }
-
-            const args = command.trim().split(' ');
-            if (args.length < 2) {
-                addOutput('Usage: /like [post-id] (right-click on post to copy ID)', 'error');
-                return;
-            }
-
-            const postId = args[1];
-
-            try {
-                const postRef = doc(db, 'devsocial-posts', postId);
-                const postDoc = await getDoc(postRef);
-
-                if (!postDoc.exists()) {
-                    addOutput('Post not found.', 'error');
-                    return;
-                }
-
-                const postData = postDoc.data();
-                const likedBy = postData.likedBy || [];
-
-                if (likedBy.includes(currentUser.id)) {
-                    addOutput('You already liked this post. Use /deslike to remove.', 'warning');
-                    return;
-                }
-
-                // Add like
-                await setDoc(postRef, {
-                    likes: (postData.likes || 0) + 1,
-                    likedBy: [...likedBy, currentUser.id]
-                }, { merge: true });
-
-                addOutput(`❤️ Liked post by @${postData.authorHandle}!`, 'success');
+                addOutput('✅ Post created successfully!', 'success');
                 loadPosts();
             } catch (error) {
-                addOutput(`Failed to like post: ${error.message}`, 'error');
+                console.error('Error creating post:', error);
+                addOutput('❌ Failed to create post.', 'error');
             }
         }
 
-        // Handle deslike command
-        async function handleDeslike(command) {
-            if (!currentUser) {
-                addOutput('You must be logged in to remove likes.', 'error');
-                return;
-            }
-
-            const args = command.trim().split(' ');
-            if (args.length < 2) {
-                addOutput('Usage: /deslike [post-id] (right-click on post to copy ID)', 'error');
-                return;
-            }
-
-            const postId = args[1];
-
+        async function loadPosts() {
             try {
-                const postRef = doc(db, 'devsocial-posts', postId);
-                const postDoc = await getDoc(postRef);
-
-                if (!postDoc.exists()) {
-                    addOutput('Post not found.', 'error');
-                    return;
-                }
-
-                const postData = postDoc.data();
-                const likedBy = postData.likedBy || [];
-
-                if (!likedBy.includes(currentUser.id)) {
-                    addOutput('You haven\'t liked this post yet.', 'warning');
-                    return;
-                }
-
-                // Remove like
-                const newLikedBy = likedBy.filter(uid => uid !== currentUser.id);
-                await setDoc(postRef, {
-                    likes: Math.max((postData.likes || 0) - 1, 0),
-                    likedBy: newLikedBy
-                }, { merge: true });
-
-                addOutput(`💔 Removed like from post by @${postData.authorHandle}`, 'success');
-                loadPosts();
-            } catch (error) {
-                addOutput(`Failed to remove like: ${error.message}`, 'error');
-            }
-        }
-
-        // Handle comment command
-        async function handleComment(command) {
-            if (!currentUser) {
-                addOutput('You must be logged in to comment.', 'error');
-                return;
-            }
-
-            const args = command.trim().split(' ');
-            if (args.length < 3) {
-                addOutput('Usage: /comment [post-id] [message] (right-click on post to copy ID)', 'error');
-                return;
-            }
-
-            const postId = args[1];
-            const message = args.slice(2).join(' ');
-
-            try {
-                const postRef = doc(db, 'devsocial-posts', postId);
-                const postDoc = await getDoc(postRef);
-
-                if (!postDoc.exists()) {
-                    addOutput('Post not found.', 'error');
-                    return;
-                }
-
-                const postData = postDoc.data();
-                const comments = postData.comments || [];
-
-                const newComment = {
-                    id: Date.now().toString(),
-                    authorId: currentUser.id,
-                    authorUsername: userProfile.username,
-                    authorHandle: userProfile.username,
-                    message: message,
-                    createdAt: new Date()
-                };
-
-                // Add comment
-                await setDoc(postRef, {
-                    comments: [...comments, newComment],
-                    commentCount: comments.length + 1
-                }, { merge: true });
-
-                addOutput(`💬 Commented on post by @${postData.authorHandle}: "${message}"`, 'success');
-                loadPosts();
-            } catch (error) {
-                addOutput(`Failed to comment: ${error.message}`, 'error');
-            }
-        }
-
-        // Format post content
-        function formatPostContent(content) {
-            return content
-                .replace(/\{bold\}([^{]+)\{bold\}/g, '<strong>$1</strong>')
-                .replace(/\{underline\}([^{]+)\{underline\}/g, '<u>$1</u>');
-        }
-
-        // Load posts
-        function loadPosts() {
-            if (!currentUser) {
-                addOutput('You must be logged in to view posts.', 'error');
-                return;
-            }
-
-            if (!isOnline) {
-                addOutput('📡 Cannot load posts: No internet connection.', 'warning');
-                return;
-            }
-
-            try {
-                const q = query(collection(db, 'devsocial-posts'), orderBy('createdAt', 'desc'));
+                const postsSnapshot = await db.collection(POSTS_COLLECTION)
+                    .orderBy('timestamp', 'desc')
+                    .limit(10)
+                    .get();
                 
-                onSnapshot(q, (querySnapshot) => {
-                    const posts = [];
-                    querySnapshot.forEach((doc) => {
-                        posts.push({ id: doc.id, ...doc.data() });
-                    });
-
-                    if (posts.length === 0) {
-                        addOutput('No posts yet. Be the first to publish!', 'info');
-                        return;
-                    }
-
-                    addOutput(`Loading ${posts.length} posts...`, 'info');
-                    
-                    posts.forEach(post => {
-                        const likesCount = post.likes || 0;
-                        const commentsCount = post.commentCount || 0;
-                        const likedByUser = (post.likedBy || []).includes(currentUser.id);
-                        const likeIcon = likedByUser ? '❤️' : '🤍';
-                        
-                        // Show recent comments (last 2)
-                        let commentsHtml = '';
-                        if (post.comments && post.comments.length > 0) {
-                            const recentComments = post.comments.slice(-2);
-                            commentsHtml = '<div style="margin-top: 10px; border-top: 1px solid #30363d; padding-top: 8px;">';
-                            recentComments.forEach(comment => {
-                                commentsHtml += `
-                                    <div style="font-size: 12px; color: #7d8590; margin-bottom: 4px;">
-                                        <span style="color: #58a6ff;">@${comment.authorHandle}</span>: ${comment.message}
-                                    </div>
-                                `;
-                            });
-                            if (post.comments.length > 2) {
-                                commentsHtml += `<div style="font-size: 11px; color: #7d8590; font-style: italic;">... and ${post.comments.length - 2} more comments</div>`;
-                            }
-                            commentsHtml += '</div>';
-                        }
-                        
-                        const postHtml = `
-                            <div class="post" data-post-id="${post.id}" oncontextmenu="copyPostId('${post.id}', event)" style="cursor: context-menu;">
-                                <div class="post-header">
-                                    <span class="post-author">${post.authorUsername}</span>
-                                    <span class="post-handle">@${post.authorHandle}</span>
-                                    <span class="post-time">${post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString() : 'Just now'}</span>
-                                    <span style="margin-left: auto; font-size: 11px; color: #7d8590;">ID: ${post.id.substring(0, 8)}...</span>
-                                </div>
-                                ${post.title ? `<div class="post-title">${post.title}</div>` : ''}
-                                ${post.content ? `<div class="post-content">${formatPostContent(post.content)}</div>` : ''}
-                                ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" alt="Post image" onerror="this.style.display='none'">` : ''}
-                                <div class="post-stats" style="margin-top: 10px; font-size: 12px; color: #7d8590; display: flex; gap: 15px;">
-                                    <span>${likeIcon} ${likesCount} ${likesCount === 1 ? 'like' : 'likes'}</span>
-                                    <span>💬 ${commentsCount} ${commentsCount === 1 ? 'comment' : 'comments'}</span>
-                                    <span style="margin-left: auto; font-style: italic;">Right-click to copy ID</span>
-                                </div>
-                                ${commentsHtml}
-                            </div>
-                        `;
-                        addOutput(postHtml);
-                    });
-                }, (error) => {
-                    // Error handler for onSnapshot
-                    let errorMessage = 'Failed to load posts: ';
-                    if (!isOnline) {
-                        errorMessage = '📡 Cannot load posts: No internet connection.';
-                    } else if (error.code === 'unavailable') {
-                        errorMessage = '🔄 Posts temporarily unavailable. Retrying...';
-                        // Retry after 3 seconds
-                        setTimeout(() => loadPosts(), 3000);
-                    } else {
-                        errorMessage += error.message;
-                    }
-                    addOutput(errorMessage, 'error');
+                if (postsSnapshot.empty) {
+                    addOutput('📝 No posts yet. Be the first to post!', 'info');
+                    return;
+                }
+                
+                addOutput('📄 Recent Posts:', 'info');
+                postsSnapshot.forEach(doc => {
+                    const post = doc.data();
+                    const timestamp = post.timestamp ? post.timestamp.toDate().toLocaleString() : 'Just now';
+                    addOutput(`👤 ${post.author} (${timestamp})`);
+                    addOutput(`   ${post.content}`);
+                    addOutput(`   ❤️ ${post.likes} likes | 💬 ${post.comments?.length || 0} comments`);
+                    addOutput('');
                 });
             } catch (error) {
-                addOutput(`Error loading posts: ${error.message}`, 'error');
-                addOutput('💡 Try: refresh the page or check your connection', 'info');
+                console.error('Error loading posts:', error);
+                addOutput('❌ Failed to load posts.', 'error');
             }
         }
 
-        // Check status function
-        function checkStatus() {
-            addOutput('🔍 DevConsole Status Check:', 'info');
-            addOutput(`📡 Network: ${isOnline ? '🟢 Online' : '🔴 Offline'}`, isOnline ? 'success' : 'error');
-            addOutput(`� Firebase: ${firebaseConnected ? '🟢 Connected' : '🔴 Disconnected'}`, firebaseConnected ? 'success' : 'error');
-            addOutput(`�👤 User: ${currentUser ? `🟢 Logged in as ${userProfile?.username || 'Unknown'}` : '🔴 Not logged in'}`, currentUser ? 'success' : 'warning');
-            addOutput(`🌍 Browser: ${navigator.userAgent.split(' ')[0]}`, 'info');
-            
-            if (!isOnline) {
-                addOutput('💡 Tip: Check your internet connection', 'warning');
-            }
-            
-            if (!firebaseConnected) {
-                addOutput('💡 Tip: Try "test" command to check Firebase connection', 'warning');
-            }
-            
-            if (!currentUser) {
-                addOutput('💡 Tip: Use /reg [username] [password] to create account', 'info');
-            }
+        // Initialize app
+        function initializeApp() {
+            addOutput('🚀 DevConsole initialized!', 'success');
         }
 
-        // Test connection function
-        async function testConnection() {
-            addOutput('🔬 Testing connections...', 'info');
-            
-            // Test basic internet
-            addOutput(`📡 Internet: ${navigator.onLine ? '🟢 Available' : '🔴 Unavailable'}`, navigator.onLine ? 'success' : 'error');
-            
-            // Test Firebase connection
-            addOutput('🔥 Testing Firebase connection...', 'info');
-            try {
-                const connected = await testFirebaseConnection();
-                if (connected) {
-                    addOutput('🔥 Firebase: 🟢 Connected and working!', 'success');
-                    addOutput('✅ All systems operational', 'success');
-                } else {
-                    addOutput('🔥 Firebase: 🔴 Connection failed', 'error');
-                    addOutput('🔧 Troubleshooting suggestions:', 'warning');
-                    addOutput('  • Refresh the page (Ctrl+F5)', 'info');
-                    addOutput('  • Check if you can access google.com', 'info');
-                    addOutput('  • Try disabling VPN/proxy', 'info');
-                    addOutput('  • Check firewall/antivirus settings', 'info');
-                }
-            } catch (error) {
-                addOutput('🔥 Firebase: 🔴 Error - ' + error.message, 'error');
-                addOutput('🔧 Try refreshing the page', 'warning');
-            }
-        }
-
-        // Reset local data function
-        function resetLocalData() {
-            addOutput('🧹 Clearing local data...', 'info');
-            
-            // Clear localStorage
-            localStorage.removeItem('devconsole_user');
-            
-            // Reset variables
-            currentUser = null;
-            userProfile = null;
-            prompt.textContent = 'guest@devconsole:~$';
-            
-            // Clear console and show welcome message
-            output.innerHTML = '';
-            addOutput('✅ Local data cleared successfully!', 'success');
-            addOutput('Welcome to DevConsole! Type \'help\' for available commands.', 'info');
-            addOutput('Please login or register to start using the social network.');
-            
-            addOutput('💡 This command clears your local session data. You will need to login again.', 'warning');
-        }
-
-        // Clear output helper
-        window.clearOutput = function() {
-            // Remove the last auth form
-            const forms = output.querySelectorAll('.auth-form');
-            if (forms.length > 0) {
-                forms[forms.length - 1].remove();
-            }
-        };
-
-        // Copy post ID function
-        window.copyPostId = function(postId, event) {
-            event.preventDefault();
-            
-            // Copy to clipboard
-            navigator.clipboard.writeText(postId).then(() => {
-                addOutput(`📋 Post ID copied: ${postId}`, 'success');
-                addOutput(`Use: /like ${postId} or /comment ${postId} [message]`, 'info');
-                
-                // Also set it in the input field
-                commandInput.value = `/like ${postId}`;
-                commandInput.focus();
-                commandInput.setSelectionRange(commandInput.value.length, commandInput.value.length);
-                
-            }).catch(() => {
-                // Fallback if clipboard API doesn't work
-                addOutput(`📋 Post ID: ${postId} (copy manually)`, 'info');
-                addOutput(`Use: /like ${postId} or /comment ${postId} [message]`, 'info');
-                
-                commandInput.value = `/like ${postId}`;
-                commandInput.focus();
-            });
-        };
-
-        // Input handler
-        commandInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const command = this.value.trim();
-                if (command) {
-                    executeCommand(command);
-                    this.value = '';
-                }
-            }
+        // Start app when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
         });
-
-        // Focus input on page load
-        commandInput.focus();
     </script>
 </body>
 </html>
