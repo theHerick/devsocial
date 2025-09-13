@@ -382,7 +382,7 @@
         async function testFirebaseConnection() {
             try {
                 // Try to read a simple document to test connection
-                const testDoc = await getDoc(doc(db, 'system', 'test'));
+                const testDoc = await getDoc(doc(db, 'devsocial-system', 'test'));
                 firebaseConnected = true;
                 retryAttempts = 0;
                 return true;
@@ -573,7 +573,7 @@
 
             try {
                 // Check if user exists in Firestore
-                const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
+                const userDoc = await getDoc(doc(db, 'devsocial-users', username.toLowerCase()));
                 
                 if (!userDoc.exists()) {
                     addOutput(`Username "${username}" not found.`, 'error');
@@ -633,7 +633,7 @@
 
                 const loginOperation = async () => {
                     // Check if user exists in Firestore
-                    const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
+                    const userDoc = await getDoc(doc(db, 'devsocial-users', username.toLowerCase()));
                     
                     if (!userDoc.exists()) {
                         throw new Error(`USER_NOT_FOUND:Username "${username}" not found.`);
@@ -714,7 +714,7 @@
 
             try {
                 // Check if username already exists
-                const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
+                const userDoc = await getDoc(doc(db, 'devsocial', 'users', username.toLowerCase()));
                 if (userDoc.exists()) {
                     addOutput('Username already taken. Please choose another one.', 'error');
                     return;
@@ -731,7 +731,7 @@
                 };
 
                 // Save user to Firestore
-                await setDoc(doc(db, 'users', username.toLowerCase()), userData);
+                await setDoc(doc(db, 'devsocial-users', username.toLowerCase()), userData);
 
                 // Login the user automatically
                 currentUser = userData;
@@ -793,7 +793,7 @@
 
                 const registerOperation = async () => {
                     // Check if username already exists
-                    const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
+                    const userDoc = await getDoc(doc(db, 'devsocial-users', username.toLowerCase()));
                     if (userDoc.exists()) {
                         throw new Error(`USERNAME_EXISTS:Username "${username}" is already taken. Please choose another one.`);
                     }
@@ -809,7 +809,7 @@
                     };
 
                     // Save user to Firestore
-                    await setDoc(doc(db, 'users', username.toLowerCase()), userData);
+                    await setDoc(doc(db, 'devsocial-users', username.toLowerCase()), userData);
                     return userData;
                 };
 
@@ -924,7 +924,7 @@
                 }
 
                 // Save post to Firestore
-                await addDoc(collection(db, 'posts'), {
+                await addDoc(collection(db, 'devsocial-posts'), {
                     title: finalTitle || 'Untitled Post',
                     content: finalDescription,
                     imageUrl: parsed.imageUrl || '',
@@ -937,7 +937,7 @@
                 });
 
                 // Update user post count
-                const userRef = doc(db, 'users', currentUser.id);
+                const userRef = doc(db, 'devsocial-users', currentUser.id);
                 const userDoc = await getDoc(userRef);
                 if (userDoc.exists()) {
                     const currentCount = userDoc.data().postCount || 0;
@@ -1016,7 +1016,7 @@
             const postId = args[1];
 
             try {
-                const postRef = doc(db, 'posts', postId);
+                const postRef = doc(db, 'devsocial-posts', postId);
                 const postDoc = await getDoc(postRef);
 
                 if (!postDoc.exists()) {
@@ -1061,7 +1061,7 @@
             const postId = args[1];
 
             try {
-                const postRef = doc(db, 'posts', postId);
+                const postRef = doc(db, 'devsocial-posts', postId);
                 const postDoc = await getDoc(postRef);
 
                 if (!postDoc.exists()) {
@@ -1108,7 +1108,7 @@
             const message = args.slice(2).join(' ');
 
             try {
-                const postRef = doc(db, 'posts', postId);
+                const postRef = doc(db, 'devsocial-posts', postId);
                 const postDoc = await getDoc(postRef);
 
                 if (!postDoc.exists()) {
@@ -1161,7 +1161,7 @@
             }
 
             try {
-                const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+                const q = query(collection(db, 'devsocial-posts'), orderBy('createdAt', 'desc'));
                 
                 onSnapshot(q, (querySnapshot) => {
                     const posts = [];
