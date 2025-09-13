@@ -118,24 +118,198 @@
             font-weight: bold;
         }
 
-        /* Main Layout */
-        .main-container {
-            max-width: 1400px;
+        /* Main Layout - Full Width */
+        .main-container-full {
+            max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 2rem;
-            min-height: calc(100vh - 100px);
+            position: relative;
         }
 
-        /* Search and Feed */
-        .feed-section {
+        /* Top Create Post Section */
+        .top-create-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.95);
+            border-bottom: 1px solid #333;
+        }
+
+        .top-create-container {
+            position: relative;
+        }
+
+        .top-create-btn {
+            background: linear-gradient(45deg, #ff0080, #00ff00);
+            border: none;
+            color: #000;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3);
+            animation: pulse-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3); }
+            100% { box-shadow: 0 6px 25px rgba(255, 0, 128, 0.6), 0 0 30px rgba(0, 255, 0, 0.3); }
+        }
+
+        .top-create-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .top-create-btn:hover::before {
+            left: 100%;
+        }
+
+        .top-create-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(255, 0, 128, 0.5);
+        }
+
+        .create-post-form {
+            margin-top: 1rem;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff0080;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.2);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-row {
             display: flex;
-            flex-direction: column;
             gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
         }
 
+        .form-input-inline {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #666;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input-inline:focus {
+            border-color: #ff0080;
+            box-shadow: 0 0 10px rgba(255, 0, 128, 0.3);
+            background: rgba(0, 0, 0, 1);
+        }
+
+        .form-input-inline::placeholder {
+            color: #666;
+        }
+
+        .submit-btn-inline {
+            background: linear-gradient(45deg, #00ff00, #0080ff);
+            border: none;
+            color: #000;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        .submit-btn-inline:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.4);
+        }
+
+        .form-textarea-inline {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #666;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #00ff00;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-textarea-inline:focus {
+            border-color: #ff0080;
+            box-shadow: 0 0 10px rgba(255, 0, 128, 0.3);
+        }
+
+        .form-textarea-inline::placeholder {
+            color: #666;
+        }
+
+        .tags-input-inline {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #666;
+            border-radius: 8px;
+            padding: 0.75rem;
+            min-height: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .tags-input-inline:focus-within {
+            border-color: #ff0080;
+            box-shadow: 0 0 10px rgba(255, 0, 128, 0.3);
+        }
+
+        .tags-input-inline .tag-input {
+            background: none;
+            border: none;
+            color: #00ff00;
+            outline: none;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .tags-input-inline .tag-input::placeholder {
+            color: #666;
+        }
+
+        /* Floating Tags Sidebar */
+        .floating-tags {
+            position: fixed;
+            top: 50%;
+            right: 2rem;
+            transform: translateY(-50%);
+            width: 250px;
+            z-index: 100;
+        }
+
+        /* Search and Feed - Full Width */
         .search-container {
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid #00ff00;
@@ -144,6 +318,14 @@
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
             position: relative;
             overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .posts-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 100%;
         }
 
         .search-container::before {
@@ -680,18 +862,24 @@
 
         /* Responsive Design */
         @media (max-width: 1200px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                gap: 1rem;
+            .floating-tags {
+                position: static;
+                transform: none;
+                width: 100%;
+                margin-top: 2rem;
             }
             
-            .create-post-container {
-                position: static;
+            .main-container-full {
+                padding: 1rem;
             }
         }
 
         @media (max-width: 768px) {
-            .main-container {
+            .top-create-section {
+                padding: 1rem;
+            }
+            
+            .main-container-full {
                 padding: 1rem;
             }
             
@@ -717,6 +905,22 @@
             .post-actions {
                 flex-wrap: wrap;
                 gap: 0.5rem;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .submit-btn-inline {
+                width: 100%;
+            }
+            
+            .floating-tags {
+                position: static;
+                transform: none;
+                width: 100%;
+                margin-top: 2rem;
             }
         }
 
@@ -786,99 +990,72 @@
         </div>
     </header>
 
-    <!-- Main Container -->
-    <div class="main-container">
-        <!-- Feed Section -->
-        <main class="feed-section">
-            <!-- Search -->
-            <div class="search-container">
-                <div class="search-header">
-                    <div class="search-icon">🔍</div>
-                    <div class="search-title">Buscar no /anon/</div>
-                </div>
-                <input type="text" class="search-box" id="searchInput" 
-                       placeholder="Digite sua busca... (título, conteúdo, tags)">
-                <div class="search-filters">
-                    <button class="filter-btn active" data-filter="all">Todos</button>
-                    <button class="filter-btn" data-filter="hot">Hot</button>
-                    <button class="filter-btn" data-filter="new">Novos</button>
-                    <button class="filter-btn" data-filter="controversial">Polêmicos</button>
-                    <button class="filter-btn" data-filter="top">Top</button>
-                </div>
-            </div>
-
-            <!-- Posts Feed -->
-            <div class="posts-feed" id="postsFeed">
-                <div class="loading">Carregando posts...</div>
-            </div>
-        </main>
-
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <!-- Create Post -->
-            <div class="create-post-container">
-                <div class="create-post-title">
-                    <span>📝</span>
-                    Criar Post Anônimo
-                </div>
+    <!-- Create Post Section (Top) -->
+    <div class="top-create-section">
+        <div class="top-create-container">
+            <button class="top-create-btn" id="toggleCreatePost">
+                📝 Criar Post Anônimo
+            </button>
+            <div class="create-post-form" id="createPostFormContainer" style="display: none;">
                 <form id="createPostForm">
-                    <div class="form-group">
-                        <label class="form-label">Título</label>
-                        <input type="text" class="form-input" id="postTitle" 
-                               placeholder="Digite o título..." required maxlength="200">
+                    <div class="form-row">
+                        <input type="text" class="form-input-inline" id="postTitle" 
+                               placeholder="Título do post..." required maxlength="200">
+                        <button type="submit" class="submit-btn-inline">
+                            🚀 Publicar
+                        </button>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Conteúdo</label>
-                        <textarea class="form-textarea" id="postContent" 
+                        <textarea class="form-textarea-inline" id="postContent" 
                                   placeholder="Escreva seu post aqui... (suporta links)" 
                                   required maxlength="5000"></textarea>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Tags (pressione Enter para adicionar)</label>
-                        <div class="tags-input" id="tagsInput">
+                        <div class="tags-input-inline" id="tagsInput">
                             <input type="text" class="tag-input" id="tagInput" 
-                                   placeholder="Digite uma tag...">
+                                   placeholder="Digite tags separadas por vírgula...">
                         </div>
                     </div>
-                    
-                    <button type="submit" class="submit-btn">
-                        🚀 Postar Anonimamente
-                    </button>
                 </form>
             </div>
+        </div>
+    </div>
 
-            <!-- Info Cards -->
-            <div class="info-card">
-                <div class="info-title">📋 Regras do /anon/</div>
-                <ul class="info-list">
-                    <li>Mantenha o anonimato</li>
-                    <li>Sem doxxing ou informações pessoais</li>
-                    <li>Respeite a diversidade</li>
-                    <li>Conteúdo NSFW deve ser marcado</li>
-                    <li>Sem spam ou flood</li>
-                </ul>
+    <!-- Main Container -->
+    <div class="main-container-full">
+        <!-- Search Section -->
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-icon">🔍</div>
+                <div class="search-title">Buscar no /anon/</div>
             </div>
+            <input type="text" class="search-box" id="searchInput" 
+                   placeholder="Digite sua busca... (título, conteúdo, tags)">
+            <div class="search-filters">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="hot">Hot</button>
+                <button class="filter-btn" data-filter="new">Novos</button>
+                <button class="filter-btn" data-filter="controversial">Polêmicos</button>
+                <button class="filter-btn" data-filter="top">Top</button>
+            </div>
+        </div>
 
+        <!-- Posts Feed -->
+        <div class="posts-feed" id="postsFeed">
+            <div class="loading">Carregando posts...</div>
+        </div>
+
+        <!-- Tags Populares Sidebar -->
+        <div class="floating-tags">
             <div class="info-card">
                 <div class="info-title">🔥 Tags Populares</div>
                 <ul class="info-list" id="popularTags">
                     <li>Carregando...</li>
                 </ul>
             </div>
-
-            <div class="info-card">
-                <div class="info-title">ℹ️ Como Usar</div>
-                <ul class="info-list">
-                    <li>Busque por qualquer termo</li>
-                    <li>Clique nas tags para filtrar</li>
-                    <li>Vote nos posts que gosta</li>
-                    <li>Comente anonimamente</li>
-                    <li>Links são automaticamente clicáveis</li>
-                </ul>
-            </div>
-        </aside>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -1224,15 +1401,29 @@
             }
         }
 
+        // Create post toggle functionality
+        document.getElementById('toggleCreatePost').addEventListener('click', function() {
+            const formContainer = document.getElementById('createPostFormContainer');
+            const isVisible = formContainer.style.display !== 'none';
+            
+            if (isVisible) {
+                formContainer.style.display = 'none';
+                this.textContent = '📝 Criar Post Anônimo';
+            } else {
+                formContainer.style.display = 'block';
+                this.textContent = '❌ Fechar';
+                document.getElementById('postTitle').focus();
+            }
+        });
+
         // Create post functionality
         document.getElementById('createPostForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const title = document.getElementById('postTitle').value.trim();
             const content = document.getElementById('postContent').value.trim();
-            const tags = Array.from(document.querySelectorAll('.tag-item')).map(tag => 
-                tag.textContent.replace('×', '').trim()
-            );
+            const tagsInput = document.getElementById('tagInput').value.trim();
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
 
             if (!title || !content) return;
 
@@ -1252,11 +1443,10 @@
 
                 await database.ref(`anon-posts/${postId}`).set(post);
                 
-                // Reset form
+                // Reset form and hide
                 document.getElementById('createPostForm').reset();
-                document.getElementById('tagsInput').innerHTML = 
-                    '<input type="text" class="tag-input" id="tagInput" placeholder="Digite uma tag...">';
-                setupTagInput();
+                document.getElementById('createPostFormContainer').style.display = 'none';
+                document.getElementById('toggleCreatePost').textContent = '📝 Criar Post Anônimo';
                 
                 loadPosts();
                 alert('Post criado com sucesso!');
@@ -1266,126 +1456,9 @@
             }
         });
 
-        // Tag input functionality
+        // Tag input functionality (simplified)
         function setupTagInput() {
-            const tagInput = document.getElementById('tagInput');
-            const tagsContainer = document.getElementById('tagsInput');
-
-            tagInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const tagText = this.value.trim();
-                    
-                    if (tagText && !tagExists(tagText)) {
-                        addTagToInput(tagText);
-                        this.value = '';
-                    }
-                }
-            });
-
-            tagsContainer.addEventListener('click', function() {
-                tagInput.focus();
-            });
-        }
-
-        function tagExists(tagText) {
-            return Array.from(document.querySelectorAll('.tag-item')).some(tag => 
-                tag.textContent.replace('×', '').trim() === tagText
-            );
-        }
-
-        function addTagToInput(tagText) {
-            const tagsContainer = document.getElementById('tagsInput');
-            const tagInput = document.getElementById('tagInput');
-            
-            const tagElement = document.createElement('span');
-            tagElement.className = 'tag-item';
-            tagElement.innerHTML = `${tagText} <button type="button" class="tag-remove" onclick="removeTag(this)">×</button>`;
-            
-            tagsContainer.insertBefore(tagElement, tagInput);
-        }
-
-        function removeTag(button) {
-            button.parentElement.remove();
-        }
-
-        // Filter functionality
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Update active filter button
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                currentFilter = this.dataset.filter;
-                filterAndDisplayPosts();
-            });
-        });
-
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function() {
-            filterAndDisplayPosts();
-        });
-
-        // Tag filtering
-        function filterByTag(tag) {
-            const searchInput = document.getElementById('searchInput');
-            searchInput.value = `#${tag}`;
-            filterAndDisplayPosts();
-        }
-
-        // Share functionality
-        function sharePost(postId) {
-            const url = `${window.location.origin}${window.location.pathname}#post-${postId}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Post do /anon/',
-                    url: url
-                });
-            } else {
-                navigator.clipboard.writeText(url).then(() => {
-                    alert('Link copiado para a área de transferência!');
-                });
-            }
-        }
-
-        // Update stats
-        function updateStats() {
-            document.getElementById('totalPosts').textContent = totalPostsCount;
-            document.getElementById('activePosts').textContent = filteredPosts.length;
-            document.getElementById('onlineUsers').textContent = Math.floor(Math.random() * 500) + 100;
-        }
-
-        // Load popular tags
-        async function loadPopularTags() {
-            try {
-                const snapshot = await database.ref('anon-posts').once('value');
-                const postsData = snapshot.val() || {};
-                
-                const tagCounts = {};
-                Object.values(postsData).forEach(post => {
-                    if (post.tags) {
-                        post.tags.forEach(tag => {
-                            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-                        });
-                    }
-                });
-
-                const popularTags = Object.entries(tagCounts)
-                    .sort(([,a], [,b]) => b - a)
-                    .slice(0, 10);
-
-                const popularTagsList = document.getElementById('popularTags');
-                if (popularTags.length > 0) {
-                    popularTagsList.innerHTML = popularTags.map(([tag, count]) => 
-                        `<li><span onclick="filterByTag('${tag}')" style="cursor: pointer; color: #00ff00;">#${tag}</span> (${count})</li>`
-                    ).join('');
-                } else {
-                    popularTagsList.innerHTML = '<li>Nenhuma tag ainda</li>';
-                }
-            } catch (error) {
-                console.error('Error loading popular tags:', error);
-            }
+            // Tags are now handled by comma separation, no complex UI needed
         }
 
         // Initialize app
