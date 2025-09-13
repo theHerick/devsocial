@@ -309,7 +309,6 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
         // Firebase configuration
@@ -326,7 +325,6 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
 
         // Global variables
@@ -350,23 +348,25 @@
         const commandInput = document.getElementById('commandInput');
         const prompt = document.getElementById('prompt');
 
-        // Authentication state listener
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists()) {
-                    userProfile = userDoc.data();
-                    prompt.textContent = `${userProfile.handle}@devconsole:~$`;
-                    addOutput(`Welcome back, ${userProfile.username}!`, 'success');
+        // Simple session management
+        function checkCurrentUser() {
+            const sessionUser = localStorage.getItem('devconsole_user');
+            if (sessionUser) {
+                try {
+                    const userData = JSON.parse(sessionUser);
+                    currentUser = userData;
+                    userProfile = userData;
+                    prompt.textContent = `${userData.username}@devconsole:~$`;
+                    addOutput(`Welcome back, ${userData.username}!`, 'success');
                     loadPosts();
+                } catch (error) {
+                    localStorage.removeItem('devconsole_user');
                 }
-            } else {
-                currentUser = null;
-                userProfile = null;
-                prompt.textContent = 'guest@devconsole:~$';
             }
-        });
+        }
+
+        // Initialize on page load
+        checkCurrentUser();
 
         // Add output to console
         function addOutput(text, type = '') {
@@ -436,7 +436,7 @@
         function showHelp() {
             addOutput('Available commands:', 'info');
             addOutput('  help - Show this help message');
-            addOutput('  login - Login to your account');
+            addOutput('  login - Login to your account with form');
             addOutput('  /login [username] [password] - Quick login');
             addOutput('  register - Create account with form');
             addOutput('  /register [username] [password] - Quick register');
@@ -469,8 +469,8 @@
                 <div class="auth-form">
                     <h3 style="color: #f0f6fc; margin-bottom: 15px;">Login</h3>
                     <div class="form-group">
-                        <label class="form-label">Email:</label>
-                        <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com">
+                        <label class="form-label">Username:</label>
+                        <input type="text" class="form-input" id="loginUsername" placeholder="Your username">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Password:</label>
@@ -495,19 +495,11 @@
                     <h3 style="color: #f0f6fc; margin-bottom: 15px;">Register</h3>
                     <div class="form-group">
                         <label class="form-label">Username:</label>
-                        <input type="text" class="form-input" id="regUsername" placeholder="Your display name">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Handle (@):</label>
-                        <input type="text" class="form-input" id="regHandle" placeholder="yourhandle (without @)">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email:</label>
-                        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com">
+                        <input type="text" class="form-input" id="regUsername" placeholder="Your username (letters, numbers, _)">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Password:</label>
-                        <input type="password" class="form-input" id="regPassword" placeholder="Password (min 6 characters)">
+                        <input type="password" class="form-input" id="regPassword" placeholder="Password (min 3 characters)">
                     </div>
                     <button class="form-button" onclick="performRegister()">Register</button>
                     <button class="form-button secondary" onclick="clearOutput()">Cancel</button>
@@ -518,18 +510,43 @@
 
         // Perform login
         window.performLogin = async function() {
-            const email = document.getElementById('loginEmail').value;
+            const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
 
-            if (!email || !password) {
-                addOutput('Please fill in all fields.', 'error');
+            if (!username || !password) {
+                addOutput('Please fill in username and password.', 'error');
                 return;
             }
 
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                // Check if user exists in Firestore
+                const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
+                
+                if (!userDoc.exists()) {
+                    addOutput(`Username "${username}" not found.`, 'error');
+                    return;
+                }
+
+                const userData = userDoc.data();
+                
+                // Check password
+                if (userData.password !== password) {
+                    addOutput('Incorrect password.', 'error');
+                    return;
+                }
+
+                // Login successful
+                currentUser = userData;
+                userProfile = userData;
+                prompt.textContent = `${userData.username}@devconsole:~$`;
+                
+                // Save to localStorage for session persistence
+                localStorage.setItem('devconsole_user', JSON.stringify(userData));
+                
                 addOutput('Login successful!', 'success');
                 clearOutput();
+                loadPosts();
+                
             } catch (error) {
                 addOutput(`Login failed: ${error.message}`, 'error');
             }
@@ -553,40 +570,40 @@
             const password = args[2];
 
             try {
-                // Try to find user by username first
-                const usernameDoc = await getDoc(doc(db, 'usernames', username.toLowerCase()));
-                let email;
+                // Check if user exists in Firestore
+                const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
                 
-                if (usernameDoc.exists()) {
-                    // Username exists, generate the email
-                    email = `${username.toLowerCase()}@devconsole.dev`;
-                } else {
-                    // Maybe it's an email directly
-                    if (username.includes('@')) {
-                        email = username;
-                    } else {
-                        addOutput(`Username "${username}" not found.`, 'error');
-                        return;
-                    }
+                if (!userDoc.exists()) {
+                    addOutput(`Username "${username}" not found.`, 'error');
+                    addOutput('💡 Use /register [username] [password] to create account', 'info');
+                    return;
                 }
 
-                await signInWithEmailAndPassword(auth, email, password);
+                const userData = userDoc.data();
+                
+                // Check password
+                if (userData.password !== password) {
+                    addOutput('Incorrect password.', 'error');
+                    return;
+                }
+
+                // Login successful
+                currentUser = userData;
+                userProfile = userData;
+                prompt.textContent = `${userData.username}@devconsole:~$`;
+                
+                // Save to localStorage for session persistence
+                localStorage.setItem('devconsole_user', JSON.stringify(userData));
+                
                 addOutput('🎉 Login successful!', 'success');
+                loadPosts();
                 
             } catch (error) {
                 let errorMessage = 'Login failed: ';
-                switch (error.code) {
-                    case 'auth/user-not-found':
-                        errorMessage += 'Username not found.';
-                        break;
-                    case 'auth/wrong-password':
-                        errorMessage += 'Incorrect password.';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage += 'Invalid username format.';
-                        break;
-                    default:
-                        errorMessage += error.message;
+                if (!isOnline) {
+                    errorMessage = '📡 Login failed: No internet connection. Please check your network.';
+                } else {
+                    errorMessage += error.message;
                 }
                 addOutput(errorMessage, 'error');
             }
@@ -595,13 +612,11 @@
         // Perform registration
         window.performRegister = async function() {
             const username = document.getElementById('regUsername').value.trim();
-            const handle = document.getElementById('regHandle').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
 
             // Validation
-            if (!username || !handle || !email || !password) {
-                addOutput('Please fill in all fields.', 'error');
+            if (!username || !password) {
+                addOutput('Please fill in username and password.', 'error');
                 return;
             }
 
@@ -610,78 +625,50 @@
                 return;
             }
 
-            if (handle.length < 2) {
-                addOutput('Handle must be at least 2 characters long.', 'error');
+            if (password.length < 3) {
+                addOutput('Password must be at least 3 characters long.', 'error');
                 return;
             }
 
-            if (handle.includes('@') || handle.includes(' ') || handle.includes('.') || handle.includes('#')) {
-                addOutput('Handle should not contain @, spaces, dots, or special characters.', 'error');
-                return;
-            }
-
-            if (!/^[a-zA-Z0-9_]+$/.test(handle)) {
-                addOutput('Handle can only contain letters, numbers, and underscores.', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                addOutput('Password must be at least 6 characters long.', 'error');
-                return;
-            }
-
-            if (!email.includes('@') || !email.includes('.')) {
-                addOutput('Please enter a valid email address.', 'error');
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                addOutput('Username can only contain letters, numbers, and underscores.', 'error');
                 return;
             }
 
             try {
-                // Check if handle already exists
-                const handleCheck = await getDoc(doc(db, 'handles', handle.toLowerCase()));
-                if (handleCheck.exists()) {
-                    addOutput('Handle already taken. Please choose another one.', 'error');
+                // Check if username already exists
+                const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
+                if (userDoc.exists()) {
+                    addOutput('Username already taken. Please choose another one.', 'error');
                     return;
                 }
 
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                // Save user profile
-                await setDoc(doc(db, 'users', user.uid), {
+                // Create user data
+                const userData = {
+                    id: username.toLowerCase(),
                     username: username,
-                    handle: handle,
-                    email: email,
-                    createdAt: serverTimestamp(),
+                    password: password,
+                    createdAt: new Date(),
                     postCount: 0,
                     joinedDate: new Date().toLocaleDateString()
-                });
+                };
 
-                // Reserve the handle
-                await setDoc(doc(db, 'handles', handle.toLowerCase()), {
-                    userId: user.uid,
-                    handle: handle,
-                    createdAt: serverTimestamp()
-                });
+                // Save user to Firestore
+                await setDoc(doc(db, 'users', username.toLowerCase()), userData);
+
+                // Login the user automatically
+                currentUser = userData;
+                userProfile = userData;
+                prompt.textContent = `${username}@devconsole:~$`;
+                
+                // Save to localStorage for session persistence
+                localStorage.setItem('devconsole_user', JSON.stringify(userData));
 
                 addOutput('Registration successful! You are now logged in.', 'success');
-                addOutput(`Welcome to DevConsole, ${username}! Your handle is @${handle}`, 'info');
+                addOutput(`Welcome to DevConsole, ${username}!`, 'info');
                 clearOutput();
             } catch (error) {
-                let errorMessage = 'Registration failed: ';
-                switch (error.code) {
-                    case 'auth/email-already-in-use':
-                        errorMessage += 'Email is already registered.';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage += 'Invalid email address.';
-                        break;
-                    case 'auth/weak-password':
-                        errorMessage += 'Password is too weak.';
-                        break;
-                    default:
-                        errorMessage += error.message;
-                }
-                addOutput(errorMessage, 'error');
+                addOutput(`Registration failed: ${error.message}`, 'error');
             }
         };
 
@@ -708,8 +695,8 @@
                 return;
             }
 
-            if (password.length < 6) {
-                addOutput('Password must be at least 6 characters long.', 'error');
+            if (password.length < 3) {
+                addOutput('Password must be at least 3 characters long.', 'error');
                 return;
             }
 
@@ -720,52 +707,35 @@
 
             try {
                 // Check if username already exists
-                const usernameCheck = await getDoc(doc(db, 'usernames', username.toLowerCase()));
-                if (usernameCheck.exists()) {
+                const userDoc = await getDoc(doc(db, 'users', username.toLowerCase()));
+                if (userDoc.exists()) {
                     addOutput(`Username "${username}" is already taken. Please choose another one.`, 'error');
                     return;
                 }
 
-                // Generate email and handle from username
-                const email = `${username.toLowerCase()}@devconsole.dev`;
-                const handle = username.toLowerCase();
-
-                // Check if handle already exists (double check)
-                const handleCheck = await getDoc(doc(db, 'handles', handle));
-                if (handleCheck.exists()) {
-                    addOutput('Handle already taken. Please choose another username.', 'error');
-                    return;
-                }
-
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                // Save user profile
-                await setDoc(doc(db, 'users', user.uid), {
+                // Create user data
+                const userData = {
+                    id: username.toLowerCase(),
                     username: username,
-                    handle: handle,
-                    email: email,
-                    createdAt: serverTimestamp(),
+                    password: password,
+                    createdAt: new Date(),
                     postCount: 0,
                     joinedDate: new Date().toLocaleDateString()
-                });
+                };
 
-                // Reserve the username and handle
-                await setDoc(doc(db, 'usernames', username.toLowerCase()), {
-                    userId: user.uid,
-                    username: username,
-                    createdAt: serverTimestamp()
-                });
+                // Save user to Firestore
+                await setDoc(doc(db, 'users', username.toLowerCase()), userData);
 
-                await setDoc(doc(db, 'handles', handle), {
-                    userId: user.uid,
-                    handle: handle,
-                    createdAt: serverTimestamp()
-                });
+                // Login the user automatically
+                currentUser = userData;
+                userProfile = userData;
+                prompt.textContent = `${username}@devconsole:~$`;
+                
+                // Save to localStorage for session persistence
+                localStorage.setItem('devconsole_user', JSON.stringify(userData));
 
                 addOutput('🎉 Registration successful! You are now logged in.', 'success');
-                addOutput(`Welcome to DevConsole, ${username}! Your handle is @${handle}`, 'info');
-                addOutput(`Your generated email: ${email}`, 'info');
+                addOutput(`Welcome to DevConsole, ${username}!`, 'info');
                 
             } catch (error) {
                 let errorMessage = 'Registration failed: ';
@@ -778,22 +748,7 @@
                 } else if (error.code === 'cancelled' || error.message.includes('cancelled')) {
                     errorMessage = '⏱️ Registration failed: Request timeout. Please try again.';
                 } else {
-                    switch (error.code) {
-                        case 'auth/email-already-in-use':
-                            errorMessage += 'Username already taken (email exists).';
-                            break;
-                        case 'auth/invalid-email':
-                            errorMessage += 'Invalid username format.';
-                            break;
-                        case 'auth/weak-password':
-                            errorMessage += 'Password is too weak (min 6 characters).';
-                            break;
-                        case 'auth/network-request-failed':
-                            errorMessage += 'Network error. Please check your connection.';
-                            break;
-                        default:
-                            errorMessage += error.message;
-                    }
+                    errorMessage += error.message;
                 }
                 
                 addOutput(errorMessage, 'error');
@@ -809,7 +764,12 @@
             }
 
             try {
-                await signOut(auth);
+                // Clear session
+                currentUser = null;
+                userProfile = null;
+                prompt.textContent = 'guest@devconsole:~$';
+                localStorage.removeItem('devconsole_user');
+                
                 addOutput('Logged out successfully.', 'success');
                 output.innerHTML = '<div class="output-line output-info">Welcome to DevConsole! Type \'help\' for available commands.</div>';
             } catch (error) {
@@ -865,16 +825,16 @@
                     title: finalTitle || 'Untitled Post',
                     content: finalDescription,
                     imageUrl: parsed.imageUrl || '',
-                    authorId: currentUser.uid,
+                    authorId: currentUser.id,
                     authorUsername: userProfile.username,
-                    authorHandle: userProfile.handle,
+                    authorHandle: userProfile.username,
                     createdAt: serverTimestamp(),
                     likes: 0,
                     likedBy: []
                 });
 
                 // Update user post count
-                const userRef = doc(db, 'users', currentUser.uid);
+                const userRef = doc(db, 'users', currentUser.id);
                 const userDoc = await getDoc(userRef);
                 if (userDoc.exists()) {
                     const currentCount = userDoc.data().postCount || 0;
@@ -964,7 +924,7 @@
                 const postData = postDoc.data();
                 const likedBy = postData.likedBy || [];
 
-                if (likedBy.includes(currentUser.uid)) {
+                if (likedBy.includes(currentUser.id)) {
                     addOutput('You already liked this post. Use /deslike to remove.', 'warning');
                     return;
                 }
@@ -972,7 +932,7 @@
                 // Add like
                 await setDoc(postRef, {
                     likes: (postData.likes || 0) + 1,
-                    likedBy: [...likedBy, currentUser.uid]
+                    likedBy: [...likedBy, currentUser.id]
                 }, { merge: true });
 
                 addOutput(`❤️ Liked post by @${postData.authorHandle}!`, 'success');
@@ -1009,13 +969,13 @@
                 const postData = postDoc.data();
                 const likedBy = postData.likedBy || [];
 
-                if (!likedBy.includes(currentUser.uid)) {
+                if (!likedBy.includes(currentUser.id)) {
                     addOutput('You haven\'t liked this post yet.', 'warning');
                     return;
                 }
 
                 // Remove like
-                const newLikedBy = likedBy.filter(uid => uid !== currentUser.uid);
+                const newLikedBy = likedBy.filter(uid => uid !== currentUser.id);
                 await setDoc(postRef, {
                     likes: Math.max((postData.likes || 0) - 1, 0),
                     likedBy: newLikedBy
@@ -1058,9 +1018,9 @@
 
                 const newComment = {
                     id: Date.now().toString(),
-                    authorId: currentUser.uid,
+                    authorId: currentUser.id,
                     authorUsername: userProfile.username,
-                    authorHandle: userProfile.handle,
+                    authorHandle: userProfile.username,
                     message: message,
                     createdAt: new Date()
                 };
@@ -1116,7 +1076,7 @@
                     posts.forEach(post => {
                         const likesCount = post.likes || 0;
                         const commentsCount = post.commentCount || 0;
-                        const likedByUser = (post.likedBy || []).includes(currentUser.uid);
+                        const likedByUser = (post.likedBy || []).includes(currentUser.id);
                         const likeIcon = likedByUser ? '❤️' : '🤍';
                         
                         // Show recent comments (last 2)
