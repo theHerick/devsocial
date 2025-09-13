@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevConsole - Social Network for Developers</title>
+    <title>/anon/ - O Maior Fórum Anônimo da Internet</title>
     <style>
         * {
             margin: 0;
@@ -12,231 +12,881 @@
         }
 
         body {
-            font-family: 'Courier New', monospace;
-            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
-            color: #c9d1d9;
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
 
-        .console-container {
-            max-width: 1200px;
+        /* Matrix-like animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 70%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 70%),
+                radial-gradient(circle at 40% 80%, rgba(0, 255, 0, 0.08) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite alternate;
+            z-index: -2;
+        }
+
+        /* Falling characters effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="10" y="20" fill="rgba(0,255,0,0.1)" font-size="12" font-family="monospace">01</text><text x="30" y="40" fill="rgba(0,255,0,0.08)" font-size="10" font-family="monospace">10</text><text x="60" y="60" fill="rgba(0,255,0,0.06)" font-size="14" font-family="monospace">11</text><text x="80" y="80" fill="rgba(0,255,0,0.09)" font-size="8" font-family="monospace">00</text></svg>') repeat;
+            animation: matrix-fall 20s linear infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
+        }
+
+        @keyframes matrix-fall {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid #00ff00;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .header-content {
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .console-header {
-            border-bottom: 1px solid #30363d;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        .console-title {
-            color: #58a6ff;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-
-        .console-subtitle {
-            color: #7d8590;
-            font-size: 12px;
-        }
-
-        .console-output {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px 0;
-            margin-bottom: 20px;
-        }
-
-        .console-input-container {
             display: flex;
             align-items: center;
-            border-top: 1px solid #30363d;
-            padding-top: 10px;
+            justify-content: space-between;
         }
 
-        .console-prompt {
-            color: #7c3aed;
-            margin-right: 10px;
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            letter-spacing: 2px;
+            position: relative;
+        }
+
+        .logo::before {
+            content: '> ';
+            color: #ff0080;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-value {
+            color: #00ff00;
             font-weight: bold;
         }
 
-        .console-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #c9d1d9;
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* Search and Feed */
+        .feed-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .search-container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .search-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-icon {
+            font-size: 1.5rem;
+            color: #00ff00;
+        }
+
+        .search-title {
+            font-size: 1.2rem;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        .search-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 1rem;
+            color: #00ff00;
             font-family: inherit;
-            font-size: inherit;
+            font-size: 1rem;
             outline: none;
+            transition: all 0.3s ease;
         }
 
-        .output-line {
-            margin-bottom: 8px;
-            padding: 2px 0;
+        .search-box:focus {
+            border-color: #ff0080;
+            box-shadow: 0 0 10px rgba(255, 0, 128, 0.5);
+            background: rgba(0, 0, 0, 1);
         }
 
-        .output-error {
-            color: #f85149;
+        .search-box::placeholder {
+            color: #666;
         }
 
-        .output-success {
-            color: #56d364;
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
         }
 
-        .output-info {
-            color: #58a6ff;
+        .filter-btn {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #666;
+            color: #888;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
 
-        .output-warning {
-            color: #f0883e;
+        .filter-btn:hover, .filter-btn.active {
+            border-color: #00ff00;
+            color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
         }
 
-        .auth-form {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 20px;
-            max-width: 400px;
-            margin: 20px auto;
+        /* Posts Feed */
+        .posts-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .post-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, #00ff00, #ff0080, #0080ff);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .post-card:hover {
+            border-color: #00ff00;
+            box-shadow: 0 5px 25px rgba(0, 255, 0, 0.2);
+        }
+
+        .post-card:hover::before {
+            opacity: 1;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .post-title {
+            font-size: 1.2rem;
+            color: #00ff00;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 3px #00ff00;
+        }
+
+        .post-id {
+            color: #ff0080;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .post-content {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+        }
+
+        .post-content a {
+            color: #0080ff;
+            text-decoration: none;
+            border-bottom: 1px dotted #0080ff;
+            transition: all 0.3s ease;
+        }
+
+        .post-content a:hover {
+            color: #00ff00;
+            border-bottom-color: #00ff00;
+            text-shadow: 0 0 5px currentColor;
+        }
+
+        .post-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+
+        .post-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #333;
+            padding-top: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .post-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid #666;
+            color: #666;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: inherit;
+        }
+
+        .action-btn:hover {
+            border-color: #00ff00;
+            color: #00ff00;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+
+        .upvote.active {
+            border-color: #00ff00;
+            color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .downvote.active {
+            border-color: #ff4444;
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .create-post-container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff0080;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.2);
+            position: sticky;
+            top: 120px;
+        }
+
+        .create-post-title {
+            color: #ff0080;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 5px #ff0080;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 1rem;
         }
 
         .form-label {
             display: block;
-            color: #f0f6fc;
-            margin-bottom: 5px;
-            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
         }
 
-        .form-input {
+        .form-input, .form-textarea {
             width: 100%;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 4px;
-            padding: 8px 10px;
-            color: #c9d1d9;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 0.75rem;
+            color: #00ff00;
             font-family: inherit;
-            font-size: 14px;
-        }
-
-        .form-input:focus {
             outline: none;
-            border-color: #58a6ff;
+            transition: all 0.3s ease;
+            resize: vertical;
         }
 
-        .form-button {
-            background: #238636;
+        .form-input:focus, .form-textarea:focus {
+            border-color: #ff0080;
+            box-shadow: 0 0 10px rgba(255, 0, 128, 0.3);
+        }
+
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: #666;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+        }
+
+        .tags-input {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 0.5rem;
+            min-height: 2.5rem;
+            align-items: center;
+            cursor: text;
+            transition: all 0.3s ease;
+        }
+
+        .tags-input:focus-within {
+            border-color: #ff0080;
+            box-shadow: 0 0 10px rgba(255, 0, 128, 0.3);
+        }
+
+        .tag-item {
+            background: rgba(255, 0, 128, 0.2);
+            border: 1px solid #ff0080;
+            color: #ff0080;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .tag-remove {
+            background: none;
             border: none;
-            border-radius: 4px;
-            color: white;
-            padding: 8px 16px;
-            font-family: inherit;
-            font-size: 14px;
+            color: #ff0080;
             cursor: pointer;
-            margin-right: 10px;
+            font-weight: bold;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .form-button:hover {
-            background: #2ea043;
+        .tag-input {
+            background: none;
+            border: none;
+            color: #00ff00;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+            font-family: inherit;
         }
 
-        .hidden {
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #ff0080, #00ff00);
+            border: none;
+            color: #000;
+            padding: 1rem;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 0, 128, 0.4);
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .info-title {
+            color: #00ff00;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 3px #00ff00;
+        }
+
+        .info-list {
+            list-style: none;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .info-list li {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list li::before {
+            content: '> ';
+            color: #ff0080;
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 1rem;
+            border-top: 1px solid #333;
+            padding-top: 1rem;
             display: none;
         }
 
-        /* Scrollbar styling */
-        .console-output::-webkit-scrollbar {
-            width: 8px;
+        .comments-section.active {
+            display: block;
         }
 
-        .console-output::-webkit-scrollbar-track {
-            background: #161b22;
+        .comment {
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 3px solid #333;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
         }
 
-        .console-output::-webkit-scrollbar-thumb {
-            background: #30363d;
-            border-radius: 4px;
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
         }
 
-        .console-output::-webkit-scrollbar-thumb:hover {
-            background: #484f58;
+        .comment-id {
+            color: #ff0080;
+            font-weight: bold;
+        }
+
+        .comment-content {
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .add-comment {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .comment-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 0.5rem;
+            color: #00ff00;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .comment-input:focus {
+            border-color: #00ff00;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+
+        .add-comment-btn {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .add-comment-btn:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-top: 2px solid #00ff00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .create-post-container {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .stats {
+                justify-content: center;
+            }
+            
+            .search-filters {
+                flex-direction: column;
+            }
+            
+            .post-header {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .post-actions {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        }
+
+        /* No posts message */
+        .no-posts {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .no-posts::before {
+            content: '¯\\_(ツ)_/¯';
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #00ff00;
+        }
+
+        /* Anonymous indicators */
+        .anon-indicator {
+            color: #ff0080;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        /* Terminal-like effects */
+        .terminal-text {
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            text-shadow: 0 0 3px #00ff00;
+        }
+
+        .glitch {
+            position: relative;
+            animation: glitch 2s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            60% { transform: translateX(-1px); }
+            80% { transform: translateX(1px); }
         }
     </style>
 </head>
 <body>
-    <div class="console-container">
-        <div class="console-header">
-            <div class="console-title">DevConsole v1.0.0</div>
-            <div class="console-subtitle">Social Network for Developers</div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo glitch">/anon/</div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span>Posts Ativos:</span>
+                    <span class="stat-value" id="activePosts">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Online:</span>
+                    <span class="stat-value" id="onlineUsers">???</span>
+                </div>
+                <div class="stat-item">
+                    <span>Total:</span>
+                    <span class="stat-value" id="totalPosts">0</span>
+                </div>
+            </div>
         </div>
+    </header>
 
-        <!-- Login/Register Section -->
-        <div id="authSection" class="auth-form">
-            <div id="loginForm">
-                <h3 style="color: #58a6ff; margin-bottom: 20px; text-align: center;">Login</h3>
-                <form id="loginFormElement">
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Feed Section -->
+        <main class="feed-section">
+            <!-- Search -->
+            <div class="search-container">
+                <div class="search-header">
+                    <div class="search-icon">🔍</div>
+                    <div class="search-title">Buscar no /anon/</div>
+                </div>
+                <input type="text" class="search-box" id="searchInput" 
+                       placeholder="Digite sua busca... (título, conteúdo, tags)">
+                <div class="search-filters">
+                    <button class="filter-btn active" data-filter="all">Todos</button>
+                    <button class="filter-btn" data-filter="hot">Hot</button>
+                    <button class="filter-btn" data-filter="new">Novos</button>
+                    <button class="filter-btn" data-filter="controversial">Polêmicos</button>
+                    <button class="filter-btn" data-filter="top">Top</button>
+                </div>
+            </div>
+
+            <!-- Posts Feed -->
+            <div class="posts-feed" id="postsFeed">
+                <div class="loading">Carregando posts...</div>
+            </div>
+        </main>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Create Post -->
+            <div class="create-post-container">
+                <div class="create-post-title">
+                    <span>📝</span>
+                    Criar Post Anônimo
+                </div>
+                <form id="createPostForm">
                     <div class="form-group">
-                        <label class="form-label" for="loginEmail">Email:</label>
-                        <input type="email" class="form-input" id="loginEmail" required>
+                        <label class="form-label">Título</label>
+                        <input type="text" class="form-input" id="postTitle" 
+                               placeholder="Digite o título..." required maxlength="200">
                     </div>
+                    
                     <div class="form-group">
-                        <label class="form-label" for="loginPassword">Password:</label>
-                        <input type="password" class="form-input" id="loginPassword" required>
+                        <label class="form-label">Conteúdo</label>
+                        <textarea class="form-textarea" id="postContent" 
+                                  placeholder="Escreva seu post aqui... (suporta links)" 
+                                  required maxlength="5000"></textarea>
                     </div>
-                    <button type="submit" class="form-button">Login</button>
-                    <button type="button" class="form-button" onclick="showRegisterForm()">Create Account</button>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Tags (pressione Enter para adicionar)</label>
+                        <div class="tags-input" id="tagsInput">
+                            <input type="text" class="tag-input" id="tagInput" 
+                                   placeholder="Digite uma tag...">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        🚀 Postar Anonimamente
+                    </button>
                 </form>
             </div>
 
-            <div id="registerForm" class="hidden">
-                <h3 style="color: #58a6ff; margin-bottom: 20px; text-align: center;">Register</h3>
-                <form id="registerFormElement">
-                    <div class="form-group">
-                        <label class="form-label" for="regEmail">Email:</label>
-                        <input type="email" class="form-input" id="regEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="regPassword">Password:</label>
-                        <input type="password" class="form-input" id="regPassword" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="regUsername">Username:</label>
-                        <input type="text" class="form-input" id="regUsername" required>
-                    </div>
-                    <button type="submit" class="form-button">Register</button>
-                    <button type="button" class="form-button" onclick="showLoginForm()">Back to Login</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Main App Section (hidden initially) -->
-        <div id="mainApp" class="hidden">
-            <div class="console-output" id="output">
-                <div class="output-line output-success">Welcome to DevConsole! You are now logged in.</div>
+            <!-- Info Cards -->
+            <div class="info-card">
+                <div class="info-title">📋 Regras do /anon/</div>
+                <ul class="info-list">
+                    <li>Mantenha o anonimato</li>
+                    <li>Sem doxxing ou informações pessoais</li>
+                    <li>Respeite a diversidade</li>
+                    <li>Conteúdo NSFW deve ser marcado</li>
+                    <li>Sem spam ou flood</li>
+                </ul>
             </div>
 
-            <div class="console-input-container">
-                <span class="console-prompt" id="prompt">user@devconsole:~$</span>
-                <input type="text" class="console-input" id="commandInput" placeholder="Type a command..." autocomplete="off">
+            <div class="info-card">
+                <div class="info-title">🔥 Tags Populares</div>
+                <ul class="info-list" id="popularTags">
+                    <li>Carregando...</li>
+                </ul>
             </div>
-        </div>
+
+            <div class="info-card">
+                <div class="info-title">ℹ️ Como Usar</div>
+                <ul class="info-list">
+                    <li>Busque por qualquer termo</li>
+                    <li>Clique nas tags para filtrar</li>
+                    <li>Vote nos posts que gosta</li>
+                    <li>Comente anonimamente</li>
+                    <li>Links são automaticamente clicáveis</li>
+                </ul>
+            </div>
+        </aside>
     </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // Firebase configuration (same as PokePoint)
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAexCf7hPN2OQvfsw66UDpci6nycivrK98",
             authDomain: "void-activation-system.firebaseapp.com",
@@ -244,508 +894,529 @@
             projectId: "void-activation-system",
             storageBucket: "void-activation-system.firebasestorage.app",
             messagingSenderId: "108268095097",
-            appId: "1:108268095097:web:4f45ff75a9e528b3f0f6a8",
-            measurementId: "G-P71BZFRDQB"
+            appId: "1:108268095097:web:4f45ff75a9e528b3f0f6a8"
         };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        const database = firebase.database();
 
         // Global variables
-        let currentUser = null;
+        let allPosts = [];
+        let filteredPosts = [];
+        let selectedTags = [];
+        let currentFilter = 'all';
+        let totalPostsCount = 0;
 
-        // Collection names
-        const USERS_COLLECTION = 'devsocial-users';
-        const POSTS_COLLECTION = 'devsocial-posts';
-
-        // UI Functions
-        function showLoginForm() {
-            document.getElementById('registerForm').classList.add('hidden');
-            document.getElementById('loginForm').classList.remove('hidden');
+        // Utility functions
+        function generateId() {
+            return Math.random().toString(36).substr(2, 9).toUpperCase();
         }
 
-        function showRegisterForm() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('registerForm').classList.remove('hidden');
+        function formatTimeAgo(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return 'agora';
+            if (minutes < 60) return `${minutes}m`;
+            if (hours < 24) return `${hours}h`;
+            return `${days}d`;
         }
 
-        function showMainApp() {
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            updatePrompt();
-            loadPosts();
+        function makeLinksClickable(text) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener">$1</a>');
         }
 
-        function showAuthSection() {
-            document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('authSection').classList.remove('hidden');
+        // Generate anonymous user ID for voting
+        function getAnonUserId() {
+            let anonId = localStorage.getItem('anon_user_id');
+            if (!anonId) {
+                anonId = 'anon_' + generateId();
+                localStorage.setItem('anon_user_id', anonId);
+            }
+            return anonId;
         }
 
-        function updatePrompt() {
-            const prompt = document.getElementById('prompt');
-            if (currentUser) {
-                prompt.textContent = `${currentUser.displayName || currentUser.email}@devconsole:~$`;
-            } else {
-                prompt.textContent = 'guest@devconsole:~$';
+        // Posts management
+        async function loadPosts() {
+            try {
+                const snapshot = await database.ref('anon-posts').once('value');
+                const postsData = snapshot.val() || {};
+                
+                allPosts = Object.keys(postsData).map(key => ({
+                    id: key,
+                    ...postsData[key]
+                })).sort((a, b) => b.timestamp - a.timestamp);
+
+                totalPostsCount = allPosts.length;
+                updateStats();
+                filterAndDisplayPosts();
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                showNoPosts('Erro ao carregar posts');
             }
         }
 
-        // Authentication
-        auth.onAuthStateChanged(user => {
-            currentUser = user;
-            if (user) {
-                console.log('User logged in:', user.email);
-                showMainApp();
-            } else {
-                console.log('User logged out');
-                showAuthSection();
+        function filterAndDisplayPosts() {
+            let posts = [...allPosts];
+
+            // Apply search filter
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                posts = posts.filter(post => 
+                    post.title.toLowerCase().includes(searchTerm) ||
+                    post.content.toLowerCase().includes(searchTerm) ||
+                    (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+                );
             }
-        });
 
-        // Login Form Handler
-        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.textContent = 'Logging in...';
-            submitBtn.disabled = true;
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    addOutput('✅ Login successful!', 'success');
-                    this.reset();
-                })
-                .catch((error) => {
-                    console.error('Login error:', error);
-                    addOutput(`❌ Login failed: ${error.message}`, 'error');
-                })
-                .finally(() => {
-                    submitBtn.textContent = 'Login';
-                    submitBtn.disabled = false;
-                });
-        });
+            // Apply tag filters
+            if (selectedTags.length > 0) {
+                posts = posts.filter(post => 
+                    post.tags && selectedTags.some(tag => post.tags.includes(tag))
+                );
+            }
 
-        // Register Form Handler
-        document.getElementById('registerFormElement').addEventListener('submit', function(e) {
-            e.preventDefault();
+            // Apply sorting filter
+            switch (currentFilter) {
+                case 'hot':
+                    posts.sort((a, b) => {
+                        const scoreA = (a.upvotes || 0) - (a.downvotes || 0) + (a.comments || 0);
+                        const scoreB = (b.upvotes || 0) - (b.downvotes || 0) + (b.comments || 0);
+                        return scoreB - scoreA;
+                    });
+                    break;
+                case 'new':
+                    posts.sort((a, b) => b.timestamp - a.timestamp);
+                    break;
+                case 'controversial':
+                    posts.sort((a, b) => {
+                        const controversyA = Math.min(a.upvotes || 0, a.downvotes || 0);
+                        const controversyB = Math.min(b.upvotes || 0, b.downvotes || 0);
+                        return controversyB - controversyA;
+                    });
+                    break;
+                case 'top':
+                    posts.sort((a, b) => {
+                        const scoreA = (a.upvotes || 0) - (a.downvotes || 0);
+                        const scoreB = (b.upvotes || 0) - (b.downvotes || 0);
+                        return scoreB - scoreA;
+                    });
+                    break;
+            }
+
+            filteredPosts = posts;
+            displayPosts(posts);
+        }
+
+        function displayPosts(posts) {
+            const feedContainer = document.getElementById('postsFeed');
             
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const username = document.getElementById('regUsername').value;
-            
-            if (username.length < 2) {
-                alert('Username must be at least 2 characters long.');
+            if (posts.length === 0) {
+                showNoPosts('Nenhum post encontrado');
                 return;
             }
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.textContent = 'Creating account...';
-            submitBtn.disabled = true;
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    
-                    // Update user profile with username
-                    return user.updateProfile({
-                        displayName: username
-                    }).then(() => {
-                        // Create user document in Firestore
-                        return db.collection(USERS_COLLECTION).doc(user.uid).set({
-                            username: username,
-                            email: email,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            postCount: 0
-                        });
-                    });
-                })
-                .then(() => {
-                    alert('Account created successfully!');
-                    this.reset();
-                    showLoginForm();
-                })
-                .catch((error) => {
-                    console.error('Registration error:', error);
-                    alert(`Registration failed: ${error.message}`);
-                })
-                .finally(() => {
-                    submitBtn.textContent = 'Register';
-                    submitBtn.disabled = false;
-                });
-        });
 
-        // Output functions
-        function addOutput(text, type = '') {
-            const output = document.getElementById('output');
-            if (!output) return;
-            
-            const line = document.createElement('div');
-            line.className = `output-line ${type ? 'output-' + type : ''}`;
-            line.textContent = text;
-            output.appendChild(line);
-            output.scrollTop = output.scrollHeight;
+            feedContainer.innerHTML = posts.map(post => createPostHTML(post)).join('');
         }
 
-        // Command system
-        const commandInput = document.getElementById('commandInput');
-        
-        if (commandInput) {
-            commandInput.addEventListener('keypress', function(e) {
+        function showNoPosts(message) {
+            const feedContainer = document.getElementById('postsFeed');
+            feedContainer.innerHTML = `<div class="no-posts">${message}</div>`;
+        }
+
+        function createPostHTML(post) {
+            const upvotes = post.upvotes || 0;
+            const downvotes = post.downvotes || 0;
+            const score = upvotes - downvotes;
+            const comments = post.commentsCount || 0;
+            
+            const anonId = getAnonUserId();
+            const hasUpvoted = post.voters && post.voters[anonId] === 'up';
+            const hasDownvoted = post.voters && post.voters[anonId] === 'down';
+
+            const tagsHTML = post.tags ? post.tags.map(tag => 
+                `<span class="tag" onclick="filterByTag('${tag}')">#${tag}</span>`
+            ).join('') : '';
+
+            return `
+                <div class="post-card" data-id="${post.id}">
+                    <div class="post-header">
+                        <div>
+                            <div class="post-title">${post.title}</div>
+                            <div class="post-id">ID: ${post.id}</div>
+                        </div>
+                        <div class="anon-indicator">ANÔNIMO</div>
+                    </div>
+                    
+                    <div class="post-content">${makeLinksClickable(post.content)}</div>
+                    
+                    ${tagsHTML ? `<div class="post-tags">${tagsHTML}</div>` : ''}
+                    
+                    <div class="post-footer">
+                        <div class="post-meta">
+                            <span>${formatTimeAgo(post.timestamp)}</span>
+                            <span>${comments} comentários</span>
+                        </div>
+                        
+                        <div class="post-actions">
+                            <button class="action-btn upvote ${hasUpvoted ? 'active' : ''}" 
+                                    onclick="votePost('${post.id}', 'up')">
+                                ▲ ${upvotes}
+                            </button>
+                            
+                            <button class="action-btn downvote ${hasDownvoted ? 'active' : ''}" 
+                                    onclick="votePost('${post.id}', 'down')">
+                                ▼ ${downvotes}
+                            </button>
+                            
+                            <button class="action-btn" onclick="toggleComments('${post.id}')">
+                                💬 ${comments}
+                            </button>
+                            
+                            <button class="action-btn" onclick="sharePost('${post.id}')">
+                                📤 Compartilhar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="comments-section" id="comments-${post.id}">
+                        <div class="add-comment">
+                            <input type="text" class="comment-input" 
+                                   placeholder="Comentar anonimamente..." 
+                                   onkeypress="handleCommentKeypress(event, '${post.id}')">
+                            <button class="add-comment-btn" onclick="addComment('${post.id}')">
+                                Enviar
+                            </button>
+                        </div>
+                        <div class="comments-list" id="comments-list-${post.id}"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Voting system
+        async function votePost(postId, voteType) {
+            const anonId = getAnonUserId();
+            
+            try {
+                const postRef = database.ref(`anon-posts/${postId}`);
+                const snapshot = await postRef.once('value');
+                const post = snapshot.val();
+                
+                if (!post) return;
+
+                const currentVote = post.voters?.[anonId];
+                const updates = { voters: post.voters || {} };
+                
+                // Remove previous vote counts
+                if (currentVote === 'up') {
+                    updates.upvotes = (post.upvotes || 1) - 1;
+                } else if (currentVote === 'down') {
+                    updates.downvotes = (post.downvotes || 1) - 1;
+                }
+                
+                // Apply new vote
+                if (currentVote === voteType) {
+                    // Remove vote
+                    delete updates.voters[anonId];
+                } else {
+                    // Add/change vote
+                    updates.voters[anonId] = voteType;
+                    if (voteType === 'up') {
+                        updates.upvotes = (updates.upvotes !== undefined ? updates.upvotes : post.upvotes || 0) + 1;
+                    } else {
+                        updates.downvotes = (updates.downvotes !== undefined ? updates.downvotes : post.downvotes || 0) + 1;
+                    }
+                }
+                
+                await postRef.update(updates);
+                loadPosts(); // Refresh posts
+            } catch (error) {
+                console.error('Error voting:', error);
+            }
+        }
+
+        // Comments system
+        async function toggleComments(postId) {
+            const commentsSection = document.getElementById(`comments-${postId}`);
+            const isVisible = commentsSection.classList.contains('active');
+            
+            if (isVisible) {
+                commentsSection.classList.remove('active');
+            } else {
+                commentsSection.classList.add('active');
+                await loadComments(postId);
+            }
+        }
+
+        async function loadComments(postId) {
+            try {
+                const snapshot = await database.ref(`anon-comments/${postId}`).once('value');
+                const commentsData = snapshot.val() || {};
+                
+                const comments = Object.keys(commentsData).map(key => ({
+                    id: key,
+                    ...commentsData[key]
+                })).sort((a, b) => a.timestamp - b.timestamp);
+
+                const commentsList = document.getElementById(`comments-list-${postId}`);
+                
+                if (comments.length === 0) {
+                    commentsList.innerHTML = '<div style="text-align: center; color: #666; padding: 1rem;">Nenhum comentário ainda</div>';
+                    return;
+                }
+
+                commentsList.innerHTML = comments.map(comment => `
+                    <div class="comment">
+                        <div class="comment-header">
+                            <span class="comment-id">ID: ${comment.id}</span>
+                            <span>${formatTimeAgo(comment.timestamp)}</span>
+                        </div>
+                        <div class="comment-content">${makeLinksClickable(comment.content)}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading comments:', error);
+            }
+        }
+
+        async function addComment(postId) {
+            const input = document.querySelector(`#comments-${postId} .comment-input`);
+            const content = input.value.trim();
+            
+            if (!content) return;
+
+            try {
+                const commentId = generateId();
+                const comment = {
+                    id: commentId,
+                    content: content,
+                    timestamp: Date.now()
+                };
+
+                await database.ref(`anon-comments/${postId}/${commentId}`).set(comment);
+                
+                // Update comment count
+                const postRef = database.ref(`anon-posts/${postId}`);
+                const snapshot = await postRef.once('value');
+                const post = snapshot.val();
+                
+                await postRef.update({
+                    commentsCount: (post.commentsCount || 0) + 1
+                });
+
+                input.value = '';
+                await loadComments(postId);
+                loadPosts(); // Refresh to update comment count
+            } catch (error) {
+                console.error('Error adding comment:', error);
+            }
+        }
+
+        function handleCommentKeypress(event, postId) {
+            if (event.key === 'Enter') {
+                addComment(postId);
+            }
+        }
+
+        // Create post functionality
+        document.getElementById('createPostForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            const tags = Array.from(document.querySelectorAll('.tag-item')).map(tag => 
+                tag.textContent.replace('×', '').trim()
+            );
+
+            if (!title || !content) return;
+
+            try {
+                const postId = generateId();
+                const post = {
+                    id: postId,
+                    title: title,
+                    content: content,
+                    tags: tags.length > 0 ? tags : null,
+                    timestamp: Date.now(),
+                    upvotes: 0,
+                    downvotes: 0,
+                    commentsCount: 0,
+                    voters: {}
+                };
+
+                await database.ref(`anon-posts/${postId}`).set(post);
+                
+                // Reset form
+                document.getElementById('createPostForm').reset();
+                document.getElementById('tagsInput').innerHTML = 
+                    '<input type="text" class="tag-input" id="tagInput" placeholder="Digite uma tag...">';
+                setupTagInput();
+                
+                loadPosts();
+                alert('Post criado com sucesso!');
+            } catch (error) {
+                console.error('Error creating post:', error);
+                alert('Erro ao criar post');
+            }
+        });
+
+        // Tag input functionality
+        function setupTagInput() {
+            const tagInput = document.getElementById('tagInput');
+            const tagsContainer = document.getElementById('tagsInput');
+
+            tagInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    const command = this.value.trim();
-                    if (command) {
-                        handleCommand(command);
+                    e.preventDefault();
+                    const tagText = this.value.trim();
+                    
+                    if (tagText && !tagExists(tagText)) {
+                        addTagToInput(tagText);
                         this.value = '';
                     }
                 }
             });
-        }
 
-        function handleCommand(command) {
-            addOutput(`${document.getElementById('prompt').textContent} ${command}`);
-            
-            const [cmd, ...args] = command.split(' ');
-            
-            switch (cmd) {
-                case 'help':
-                    showHelp();
-                    break;
-                case 'logout':
-                    logout();
-                    break;
-                case '/post':
-                    if (args.length === 0) {
-                        addOutput('❌ Usage: /post {title}; {description};', 'error');
-                        addOutput('Example: /post Hello World **bold**; This is my first post __underline__;', 'info');
-                    } else {
-                        createPostWithFormat(args.join(' '));
-                    }
-                    break;
-                case 'post':
-                    if (args.length === 0) {
-                        addOutput('❌ Usage: post <message>', 'error');
-                    } else {
-                        createPost(args.join(' '));
-                    }
-                    break;
-                case 'posts':
-                    loadPosts();
-                    break;
-                case 'like':
-                    if (args.length === 0) {
-                        addOutput('❌ Usage: like <post_id>', 'error');
-                    } else {
-                        likePost(args[0]);
-                    }
-                    break;
-                case 'comment':
-                    if (args.length < 2) {
-                        addOutput('❌ Usage: comment <post_id> <message>', 'error');
-                    } else {
-                        const postId = args[0];
-                        const commentText = args.slice(1).join(' ');
-                        addComment(postId, commentText);
-                    }
-                    break;
-                case 'clear':
-                    clearOutput();
-                    break;
-                default:
-                    addOutput(`❌ Unknown command: ${cmd}. Type 'help' for available commands.`, 'error');
-            }
-        }
-
-        function showHelp() {
-            addOutput('Available commands:', 'info');
-            addOutput('  help - Show this help message');
-            addOutput('  /post {title}; {description}; - Create post with title and description');
-            addOutput('  post <message> - Create simple post');
-            addOutput('  posts - Load recent posts');
-            addOutput('  like <post_id> - Like/unlike a post');
-            addOutput('  comment <post_id> <message> - Add comment to post');
-            addOutput('  logout - Logout from the system');
-            addOutput('  clear - Clear the console');
-            addOutput('');
-            addOutput('Post formatting:', 'info');
-            addOutput('  **bold** - Bold text');
-            addOutput('  __underline__ - Underlined text');
-            addOutput('  Example: /post Hello **World**; This is my __first__ post;');
-        }
-
-        function logout() {
-            auth.signOut().then(() => {
-                addOutput('👋 Logged out successfully!', 'success');
-                clearOutput();
+            tagsContainer.addEventListener('click', function() {
+                tagInput.focus();
             });
         }
 
-        function clearOutput() {
-            const output = document.getElementById('output');
-            if (output) {
-                output.innerHTML = '';
-            }
+        function tagExists(tagText) {
+            return Array.from(document.querySelectorAll('.tag-item')).some(tag => 
+                tag.textContent.replace('×', '').trim() === tagText
+            );
         }
 
-        // Posts functions
-        function createPostWithFormat(input) {
-            if (!currentUser) {
-                addOutput('❌ You must be logged in to post.', 'error');
-                return;
-            }
+        function addTagToInput(tagText) {
+            const tagsContainer = document.getElementById('tagsInput');
+            const tagInput = document.getElementById('tagInput');
             
-            console.log('Creating post with format:', input);
+            const tagElement = document.createElement('span');
+            tagElement.className = 'tag-item';
+            tagElement.innerHTML = `${tagText} <button type="button" class="tag-remove" onclick="removeTag(this)">×</button>`;
             
-            // Parse format: {title}; {description};
-            const parts = input.split(';').map(part => part.trim());
-            
-            if (parts.length < 2 || !parts[0] || !parts[1]) {
-                addOutput('❌ Invalid format. Use: /post {title}; {description};', 'error');
-                addOutput('Example: /post Hello World; This is my first post;', 'info');
-                return;
-            }
-            
-            const title = parts[0];
-            const description = parts[1];
-            
-            // Process formatting
-            const processedTitle = processTextFormatting(title);
-            const processedDescription = processTextFormatting(description);
-            
-            addOutput('📝 Creating post...', 'info');
-            createPost(processedTitle, processedDescription);
-        }
-        
-        function processTextFormatting(text) {
-            // Convert **text** to bold and __text__ to underline
-            let processed = text;
-            processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            processed = processed.replace(/__(.*?)__/g, '<u>$1</u>');
-            return processed;
+            tagsContainer.insertBefore(tagElement, tagInput);
         }
 
-        async function createPost(titleOrContent, description = null) {
-            if (!currentUser) {
-                addOutput('❌ You must be logged in to post.', 'error');
-                return;
-            }
+        function removeTag(button) {
+            button.parentElement.remove();
+        }
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active filter button
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                currentFilter = this.dataset.filter;
+                filterAndDisplayPosts();
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            filterAndDisplayPosts();
+        });
+
+        // Tag filtering
+        function filterByTag(tag) {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = `#${tag}`;
+            filterAndDisplayPosts();
+        }
+
+        // Share functionality
+        function sharePost(postId) {
+            const url = `${window.location.origin}${window.location.pathname}#post-${postId}`;
             
-            console.log('Creating post with user:', currentUser);
-            console.log('Title/Content:', titleOrContent);
-            console.log('Description:', description);
-            
-            try {
-                const postData = {
-                    content: description || titleOrContent,
-                    title: description ? titleOrContent : null,
-                    author: currentUser.displayName || currentUser.email,
-                    authorId: currentUser.uid,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    likes: 0,
-                    likedBy: [],
-                    comments: []
-                };
-                
-                console.log('Post data to save:', postData);
-                
-                const docRef = await db.collection(POSTS_COLLECTION).add(postData);
-                console.log('Post saved with ID:', docRef.id);
-                
-                // Update user's post count
-                await db.collection(USERS_COLLECTION).doc(currentUser.uid).update({
-                    postCount: firebase.firestore.FieldValue.increment(1)
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Post do /anon/',
+                    url: url
                 });
-                
-                addOutput('✅ Post created successfully!', 'success');
-                setTimeout(() => loadPosts(), 1000); // Wait a bit for Firebase to sync
-            } catch (error) {
-                console.error('Error creating post:', error);
-                addOutput(`❌ Failed to create post: ${error.message}`, 'error');
-                
-                // Additional debugging
-                if (error.code) {
-                    addOutput(`Error code: ${error.code}`, 'error');
-                }
-                
-                // Test Firebase connection
-                try {
-                    await db.collection('test').add({ test: true });
-                    addOutput('Firebase connection is working', 'info');
-                } catch (testError) {
-                    addOutput(`Firebase connection failed: ${testError.message}`, 'error');
-                }
+            } else {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Link copiado para a área de transferência!');
+                });
             }
         }
 
-        async function loadPosts() {
-            console.log('Loading posts...');
-            
+        // Update stats
+        function updateStats() {
+            document.getElementById('totalPosts').textContent = totalPostsCount;
+            document.getElementById('activePosts').textContent = filteredPosts.length;
+            document.getElementById('onlineUsers').textContent = Math.floor(Math.random() * 500) + 100;
+        }
+
+        // Load popular tags
+        async function loadPopularTags() {
             try {
-                const postsSnapshot = await db.collection(POSTS_COLLECTION)
-                    .orderBy('timestamp', 'desc')
-                    .limit(10)
-                    .get();
+                const snapshot = await database.ref('anon-posts').once('value');
+                const postsData = snapshot.val() || {};
                 
-                console.log('Posts snapshot size:', postsSnapshot.size);
-                
-                if (postsSnapshot.empty) {
-                    addOutput('📝 No posts yet. Be the first to post!', 'info');
-                    return;
-                }
-                
-                addOutput('📄 Recent Posts:', 'info');
-                addOutput('', '');
-                
-                postsSnapshot.forEach((doc, index) => {
-                    const post = doc.data();
-                    const postId = doc.id;
-                    const timestamp = post.timestamp ? post.timestamp.toDate().toLocaleString() : 'Just now';
-                    
-                    console.log('Post data:', post);
-                    
-                    // Post header
-                    addOutput(`� Post #${index + 1} (ID: ${postId})`, 'info');
-                    addOutput(`�👤 ${post.author} • ${timestamp}`);
-                    
-                    // Title (if exists)
-                    if (post.title) {
-                        addOutput(`📝 ${post.title}`);
-                    }
-                    
-                    // Content
-                    addOutput(`💬 ${post.content}`);
-                    
-                    // Stats
-                    const likesCount = post.likes || 0;
-                    const commentsCount = post.comments ? post.comments.length : 0;
-                    addOutput(`❤️ ${likesCount} likes | 💬 ${commentsCount} comments`);
-                    
-                    // Recent comments
-                    if (post.comments && post.comments.length > 0) {
-                        const recentComments = post.comments.slice(-2);
-                        recentComments.forEach(comment => {
-                            addOutput(`  💬 ${comment.author}: ${comment.content}`, 'info');
+                const tagCounts = {};
+                Object.values(postsData).forEach(post => {
+                    if (post.tags) {
+                        post.tags.forEach(tag => {
+                            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
                         });
                     }
-                    
-                    addOutput('', ''); // Empty line between posts
                 });
-                
-            } catch (error) {
-                console.error('Error loading posts:', error);
-                addOutput(`❌ Failed to load posts: ${error.message}`, 'error');
-                
-                // Try to test Firebase connection
-                try {
-                    const testDoc = await db.collection('test').doc('connection-test').set({
-                        test: true,
-                        timestamp: new Date()
-                    });
-                    addOutput('✅ Firebase connection test successful', 'success');
-                } catch (testError) {
-                    addOutput(`❌ Firebase connection failed: ${testError.message}`, 'error');
-                }
-            }
-        }
 
-        // Like and Comment functions
-        async function likePost(postId) {
-            if (!currentUser) {
-                addOutput('❌ You must be logged in to like posts.', 'error');
-                return;
-            }
-            
-            console.log('Liking post:', postId);
-            
-            try {
-                const postRef = db.collection(POSTS_COLLECTION).doc(postId);
-                const postDoc = await postRef.get();
-                
-                if (!postDoc.exists) {
-                    addOutput('❌ Post not found.', 'error');
-                    return;
-                }
-                
-                const postData = postDoc.data();
-                const likedBy = postData.likedBy || [];
-                const userAlreadyLiked = likedBy.includes(currentUser.uid);
-                
-                if (userAlreadyLiked) {
-                    // Unlike
-                    await postRef.update({
-                        likes: firebase.firestore.FieldValue.increment(-1),
-                        likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
-                    });
-                    addOutput('💔 Post unliked!', 'success');
+                const popularTags = Object.entries(tagCounts)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 10);
+
+                const popularTagsList = document.getElementById('popularTags');
+                if (popularTags.length > 0) {
+                    popularTagsList.innerHTML = popularTags.map(([tag, count]) => 
+                        `<li><span onclick="filterByTag('${tag}')" style="cursor: pointer; color: #00ff00;">#${tag}</span> (${count})</li>`
+                    ).join('');
                 } else {
-                    // Like
-                    await postRef.update({
-                        likes: firebase.firestore.FieldValue.increment(1),
-                        likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
-                    });
-                    addOutput('❤️ Post liked!', 'success');
+                    popularTagsList.innerHTML = '<li>Nenhuma tag ainda</li>';
                 }
-                
-                // Reload posts to show updated likes
-                setTimeout(() => loadPosts(), 500);
-                
             } catch (error) {
-                console.error('Error liking post:', error);
-                addOutput(`❌ Failed to like post: ${error.message}`, 'error');
-            }
-        }
-        
-        async function addComment(postId, commentText) {
-            if (!currentUser) {
-                addOutput('❌ You must be logged in to comment.', 'error');
-                return;
-            }
-            
-            console.log('Adding comment to post:', postId, 'Text:', commentText);
-            
-            try {
-                const postRef = db.collection(POSTS_COLLECTION).doc(postId);
-                const postDoc = await postRef.get();
-                
-                if (!postDoc.exists) {
-                    addOutput('❌ Post not found.', 'error');
-                    return;
-                }
-                
-                const comment = {
-                    author: currentUser.displayName || currentUser.email,
-                    authorId: currentUser.uid,
-                    content: processTextFormatting(commentText),
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                await postRef.update({
-                    comments: firebase.firestore.FieldValue.arrayUnion(comment)
-                });
-                
-                addOutput('💬 Comment added!', 'success');
-                
-                // Reload posts to show new comment
-                setTimeout(() => loadPosts(), 500);
-                
-            } catch (error) {
-                console.error('Error adding comment:', error);
-                addOutput(`❌ Failed to add comment: ${error.message}`, 'error');
+                console.error('Error loading popular tags:', error);
             }
         }
 
         // Initialize app
-        function initializeApp() {
-            addOutput('🚀 DevConsole initialized!', 'success');
-        }
-
-        // Start app when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
+            setupTagInput();
+            loadPosts();
+            loadPopularTags();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                loadPosts();
+                loadPopularTags();
+            }, 30000);
+        });
+
+        // Handle deep linking to specific posts
+        window.addEventListener('load', function() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#post-')) {
+                const postId = hash.replace('#post-', '');
+                setTimeout(() => {
+                    const postElement = document.querySelector(`[data-id="${postId}"]`);
+                    if (postElement) {
+                        postElement.scrollIntoView({ behavior: 'smooth' });
+                        postElement.style.border = '2px solid #ff0080';
+                        setTimeout(() => {
+                            postElement.style.border = '1px solid #333';
+                        }, 3000);
+                    }
+                }, 1000);
+            }
         });
     </script>
 </body>
