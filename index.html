@@ -332,6 +332,18 @@
         // Global variables
         let currentUser = null;
         let userProfile = null;
+        let isOnline = navigator.onLine;
+
+        // Network status monitoring
+        window.addEventListener('online', () => {
+            isOnline = true;
+            addOutput('🌐 Connection restored!', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            addOutput('📡 Connection lost. Working offline...', 'warning');
+        });
 
         // DOM elements
         const output = document.getElementById('output');
@@ -388,6 +400,9 @@
                 case '/register':
                     handleRegisterCommand(command);
                     break;
+                case '/reg':
+                    handleRegisterCommand(command.replace('/reg', '/register'));
+                    break;
                 case 'logout':
                     handleLogout();
                     break;
@@ -409,6 +424,9 @@
                 case 'posts':
                     loadPosts();
                     break;
+                case 'status':
+                    checkStatus();
+                    break;
                 default:
                     addOutput(`Command not found: ${cmd}. Type 'help' for available commands.`, 'error');
             }
@@ -422,8 +440,10 @@
             addOutput('  /login [username] [password] - Quick login');
             addOutput('  register - Create account with form');
             addOutput('  /register [username] [password] - Quick register');
+            addOutput('  /reg [username] [password] - Quick register (alias)');
             addOutput('  logout - Logout from your account');
             addOutput('  posts - Load recent posts');
+            addOutput('  status - Check connection status');
             addOutput('  clear - Clear the console');
             if (currentUser) {
                 addOutput('  /post {title} Title - Create a post with just title');
@@ -749,20 +769,35 @@
                 
             } catch (error) {
                 let errorMessage = 'Registration failed: ';
-                switch (error.code) {
-                    case 'auth/email-already-in-use':
-                        errorMessage += 'Username already taken (email exists).';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage += 'Invalid username format.';
-                        break;
-                    case 'auth/weak-password':
-                        errorMessage += 'Password is too weak (min 6 characters).';
-                        break;
-                    default:
-                        errorMessage += error.message;
+                
+                // Network-specific error handling
+                if (!isOnline) {
+                    errorMessage = '📡 Registration failed: No internet connection. Please check your network.';
+                } else if (error.code === 'unavailable' || error.message.includes('UNAVAILABLE')) {
+                    errorMessage = '🔄 Registration failed: Firebase service temporarily unavailable. Please try again.';
+                } else if (error.code === 'cancelled' || error.message.includes('cancelled')) {
+                    errorMessage = '⏱️ Registration failed: Request timeout. Please try again.';
+                } else {
+                    switch (error.code) {
+                        case 'auth/email-already-in-use':
+                            errorMessage += 'Username already taken (email exists).';
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage += 'Invalid username format.';
+                            break;
+                        case 'auth/weak-password':
+                            errorMessage += 'Password is too weak (min 6 characters).';
+                            break;
+                        case 'auth/network-request-failed':
+                            errorMessage += 'Network error. Please check your connection.';
+                            break;
+                        default:
+                            errorMessage += error.message;
+                    }
                 }
+                
                 addOutput(errorMessage, 'error');
+                addOutput('💡 Tip: Try /reg [username] [password] for quick retry', 'info');
             }
         }
 
@@ -1057,67 +1092,107 @@
                 return;
             }
 
-            const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
-            
-            onSnapshot(q, (querySnapshot) => {
-                const posts = [];
-                querySnapshot.forEach((doc) => {
-                    posts.push({ id: doc.id, ...doc.data() });
-                });
+            if (!isOnline) {
+                addOutput('📡 Cannot load posts: No internet connection.', 'warning');
+                return;
+            }
 
-                if (posts.length === 0) {
-                    addOutput('No posts yet. Be the first to publish!', 'info');
-                    return;
-                }
-
-                addOutput(`Loading ${posts.length} posts...`, 'info');
+            try {
+                const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
                 
-                posts.forEach(post => {
-                    const likesCount = post.likes || 0;
-                    const commentsCount = post.commentCount || 0;
-                    const likedByUser = (post.likedBy || []).includes(currentUser.uid);
-                    const likeIcon = likedByUser ? '❤️' : '🤍';
-                    
-                    // Show recent comments (last 2)
-                    let commentsHtml = '';
-                    if (post.comments && post.comments.length > 0) {
-                        const recentComments = post.comments.slice(-2);
-                        commentsHtml = '<div style="margin-top: 10px; border-top: 1px solid #30363d; padding-top: 8px;">';
-                        recentComments.forEach(comment => {
-                            commentsHtml += `
-                                <div style="font-size: 12px; color: #7d8590; margin-bottom: 4px;">
-                                    <span style="color: #58a6ff;">@${comment.authorHandle}</span>: ${comment.message}
-                                </div>
-                            `;
-                        });
-                        if (post.comments.length > 2) {
-                            commentsHtml += `<div style="font-size: 11px; color: #7d8590; font-style: italic;">... and ${post.comments.length - 2} more comments</div>`;
-                        }
-                        commentsHtml += '</div>';
+                onSnapshot(q, (querySnapshot) => {
+                    const posts = [];
+                    querySnapshot.forEach((doc) => {
+                        posts.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    if (posts.length === 0) {
+                        addOutput('No posts yet. Be the first to publish!', 'info');
+                        return;
                     }
+
+                    addOutput(`Loading ${posts.length} posts...`, 'info');
                     
-                    const postHtml = `
-                        <div class="post" data-post-id="${post.id}" oncontextmenu="copyPostId('${post.id}', event)" style="cursor: context-menu;">
-                            <div class="post-header">
-                                <span class="post-author">${post.authorUsername}</span>
-                                <span class="post-handle">@${post.authorHandle}</span>
-                                <span class="post-time">${post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString() : 'Just now'}</span>
-                                <span style="margin-left: auto; font-size: 11px; color: #7d8590;">ID: ${post.id.substring(0, 8)}...</span>
+                    posts.forEach(post => {
+                        const likesCount = post.likes || 0;
+                        const commentsCount = post.commentCount || 0;
+                        const likedByUser = (post.likedBy || []).includes(currentUser.uid);
+                        const likeIcon = likedByUser ? '❤️' : '🤍';
+                        
+                        // Show recent comments (last 2)
+                        let commentsHtml = '';
+                        if (post.comments && post.comments.length > 0) {
+                            const recentComments = post.comments.slice(-2);
+                            commentsHtml = '<div style="margin-top: 10px; border-top: 1px solid #30363d; padding-top: 8px;">';
+                            recentComments.forEach(comment => {
+                                commentsHtml += `
+                                    <div style="font-size: 12px; color: #7d8590; margin-bottom: 4px;">
+                                        <span style="color: #58a6ff;">@${comment.authorHandle}</span>: ${comment.message}
+                                    </div>
+                                `;
+                            });
+                            if (post.comments.length > 2) {
+                                commentsHtml += `<div style="font-size: 11px; color: #7d8590; font-style: italic;">... and ${post.comments.length - 2} more comments</div>`;
+                            }
+                            commentsHtml += '</div>';
+                        }
+                        
+                        const postHtml = `
+                            <div class="post" data-post-id="${post.id}" oncontextmenu="copyPostId('${post.id}', event)" style="cursor: context-menu;">
+                                <div class="post-header">
+                                    <span class="post-author">${post.authorUsername}</span>
+                                    <span class="post-handle">@${post.authorHandle}</span>
+                                    <span class="post-time">${post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString() : 'Just now'}</span>
+                                    <span style="margin-left: auto; font-size: 11px; color: #7d8590;">ID: ${post.id.substring(0, 8)}...</span>
+                                </div>
+                                ${post.title ? `<div class="post-title">${post.title}</div>` : ''}
+                                ${post.content ? `<div class="post-content">${formatPostContent(post.content)}</div>` : ''}
+                                ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" alt="Post image" onerror="this.style.display='none'">` : ''}
+                                <div class="post-stats" style="margin-top: 10px; font-size: 12px; color: #7d8590; display: flex; gap: 15px;">
+                                    <span>${likeIcon} ${likesCount} ${likesCount === 1 ? 'like' : 'likes'}</span>
+                                    <span>💬 ${commentsCount} ${commentsCount === 1 ? 'comment' : 'comments'}</span>
+                                    <span style="margin-left: auto; font-style: italic;">Right-click to copy ID</span>
+                                </div>
+                                ${commentsHtml}
                             </div>
-                            ${post.title ? `<div class="post-title">${post.title}</div>` : ''}
-                            ${post.content ? `<div class="post-content">${formatPostContent(post.content)}</div>` : ''}
-                            ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" alt="Post image" onerror="this.style.display='none'">` : ''}
-                            <div class="post-stats" style="margin-top: 10px; font-size: 12px; color: #7d8590; display: flex; gap: 15px;">
-                                <span>${likeIcon} ${likesCount} ${likesCount === 1 ? 'like' : 'likes'}</span>
-                                <span>💬 ${commentsCount} ${commentsCount === 1 ? 'comment' : 'comments'}</span>
-                                <span style="margin-left: auto; font-style: italic;">Right-click to copy ID</span>
-                            </div>
-                            ${commentsHtml}
-                        </div>
-                    `;
-                    addOutput(postHtml);
+                        `;
+                        addOutput(postHtml);
+                    });
+                }, (error) => {
+                    // Error handler for onSnapshot
+                    let errorMessage = 'Failed to load posts: ';
+                    if (!isOnline) {
+                        errorMessage = '📡 Cannot load posts: No internet connection.';
+                    } else if (error.code === 'unavailable') {
+                        errorMessage = '🔄 Posts temporarily unavailable. Retrying...';
+                        // Retry after 3 seconds
+                        setTimeout(() => loadPosts(), 3000);
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    addOutput(errorMessage, 'error');
                 });
-            });
+            } catch (error) {
+                addOutput(`Error loading posts: ${error.message}`, 'error');
+                addOutput('💡 Try: refresh the page or check your connection', 'info');
+            }
+        }
+
+        // Check status function
+        function checkStatus() {
+            addOutput('🔍 DevConsole Status Check:', 'info');
+            addOutput(`📡 Network: ${isOnline ? '🟢 Online' : '🔴 Offline'}`, isOnline ? 'success' : 'error');
+            addOutput(`👤 User: ${currentUser ? `🟢 Logged in as ${userProfile?.username || 'Unknown'}` : '🔴 Not logged in'}`, currentUser ? 'success' : 'warning');
+            addOutput(`🔥 Firebase: ${firebaseConfig.projectId}`, 'info');
+            addOutput(`🌍 Browser: ${navigator.userAgent.split(' ')[0]}`, 'info');
+            
+            if (!isOnline) {
+                addOutput('💡 Tip: Check your internet connection', 'warning');
+            }
+            
+            if (!currentUser) {
+                addOutput('💡 Tip: Use /reg [username] [password] to create account', 'info');
+            }
         }
 
         // Clear output helper
