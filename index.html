@@ -379,8 +379,14 @@
                 case 'login':
                     showLoginForm();
                     break;
+                case '/login':
+                    handleLoginCommand(command);
+                    break;
                 case 'register':
                     showRegisterForm();
+                    break;
+                case '/register':
+                    handleRegisterCommand(command);
                     break;
                 case 'logout':
                     handleLogout();
@@ -413,7 +419,9 @@
             addOutput('Available commands:', 'info');
             addOutput('  help - Show this help message');
             addOutput('  login - Login to your account');
-            addOutput('  register - Create a new account');
+            addOutput('  /login [username] [password] - Quick login');
+            addOutput('  register - Create account with form');
+            addOutput('  /register [username] [password] - Quick register');
             addOutput('  logout - Logout from your account');
             addOutput('  posts - Load recent posts');
             addOutput('  clear - Clear the console');
@@ -507,6 +515,63 @@
             }
         };
 
+        // Handle login command
+        async function handleLoginCommand(command) {
+            if (currentUser) {
+                addOutput('You are already logged in! Use logout first.', 'warning');
+                return;
+            }
+
+            const args = command.trim().split(' ');
+            if (args.length < 3) {
+                addOutput('Usage: /login [username] [password]', 'error');
+                addOutput('Example: /login johndoe mypassword123', 'info');
+                return;
+            }
+
+            const username = args[1];
+            const password = args[2];
+
+            try {
+                // Try to find user by username first
+                const usernameDoc = await getDoc(doc(db, 'usernames', username.toLowerCase()));
+                let email;
+                
+                if (usernameDoc.exists()) {
+                    // Username exists, generate the email
+                    email = `${username.toLowerCase()}@devconsole.dev`;
+                } else {
+                    // Maybe it's an email directly
+                    if (username.includes('@')) {
+                        email = username;
+                    } else {
+                        addOutput(`Username "${username}" not found.`, 'error');
+                        return;
+                    }
+                }
+
+                await signInWithEmailAndPassword(auth, email, password);
+                addOutput('🎉 Login successful!', 'success');
+                
+            } catch (error) {
+                let errorMessage = 'Login failed: ';
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage += 'Username not found.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage += 'Incorrect password.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid username format.';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                addOutput(errorMessage, 'error');
+            }
+        }
+
         // Perform registration
         window.performRegister = async function() {
             const username = document.getElementById('regUsername').value.trim();
@@ -599,6 +664,107 @@
                 addOutput(errorMessage, 'error');
             }
         };
+
+        // Handle register command
+        async function handleRegisterCommand(command) {
+            if (currentUser) {
+                addOutput('You are already logged in! Use logout first.', 'warning');
+                return;
+            }
+
+            const args = command.trim().split(' ');
+            if (args.length < 3) {
+                addOutput('Usage: /register [username] [password]', 'error');
+                addOutput('Example: /register johndoe mypassword123', 'info');
+                return;
+            }
+
+            const username = args[1];
+            const password = args[2];
+
+            // Validation
+            if (username.length < 2) {
+                addOutput('Username must be at least 2 characters long.', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                addOutput('Password must be at least 6 characters long.', 'error');
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                addOutput('Username can only contain letters, numbers, and underscores.', 'error');
+                return;
+            }
+
+            try {
+                // Check if username already exists
+                const usernameCheck = await getDoc(doc(db, 'usernames', username.toLowerCase()));
+                if (usernameCheck.exists()) {
+                    addOutput(`Username "${username}" is already taken. Please choose another one.`, 'error');
+                    return;
+                }
+
+                // Generate email and handle from username
+                const email = `${username.toLowerCase()}@devconsole.dev`;
+                const handle = username.toLowerCase();
+
+                // Check if handle already exists (double check)
+                const handleCheck = await getDoc(doc(db, 'handles', handle));
+                if (handleCheck.exists()) {
+                    addOutput('Handle already taken. Please choose another username.', 'error');
+                    return;
+                }
+
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Save user profile
+                await setDoc(doc(db, 'users', user.uid), {
+                    username: username,
+                    handle: handle,
+                    email: email,
+                    createdAt: serverTimestamp(),
+                    postCount: 0,
+                    joinedDate: new Date().toLocaleDateString()
+                });
+
+                // Reserve the username and handle
+                await setDoc(doc(db, 'usernames', username.toLowerCase()), {
+                    userId: user.uid,
+                    username: username,
+                    createdAt: serverTimestamp()
+                });
+
+                await setDoc(doc(db, 'handles', handle), {
+                    userId: user.uid,
+                    handle: handle,
+                    createdAt: serverTimestamp()
+                });
+
+                addOutput('🎉 Registration successful! You are now logged in.', 'success');
+                addOutput(`Welcome to DevConsole, ${username}! Your handle is @${handle}`, 'info');
+                addOutput(`Your generated email: ${email}`, 'info');
+                
+            } catch (error) {
+                let errorMessage = 'Registration failed: ';
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage += 'Username already taken (email exists).';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid username format.';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage += 'Password is too weak (min 6 characters).';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                addOutput(errorMessage, 'error');
+            }
+        }
 
         // Handle logout
         async function handleLogout() {
