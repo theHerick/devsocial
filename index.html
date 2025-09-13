@@ -33,7 +33,50 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 4rem 2rem;
+        }
+
+        .main-search {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-giant {
+            flex: 1;
+            background: #000;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 1.5rem;
+            font-family: inherit;
+            font-size: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .search-giant:focus {
+            outline: none;
+            border-color: #ff0080;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .add-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: #ff0080;
+            transform: scale(1.1);
         }
 
         .create-post {
@@ -83,6 +126,7 @@
             margin-bottom: 2rem;
             font-family: inherit;
             border-radius: 3px;
+            display: none; /* Removido a busca normal */
         }
 
         .post {
@@ -199,20 +243,23 @@
     </div>
 
     <div class="container">
-        <!-- Criar Post -->
-        <div class="create-post">
+        <!-- Busca Principal -->
+        <div class="main-search">
+            <input type="text" class="search-giant" id="searchInput" placeholder="Buscar no fórum anônimo..." onkeyup="searchPosts()">
+            <button class="add-btn" id="addBtn" onclick="toggleCreatePost()" title="Criar Post">+</button>
+        </div>
+
+        <!-- Criar Post (escondido) -->
+        <div class="create-post" id="createPostForm" style="display: none;">
             <input type="text" id="postTitle" placeholder="Título">
             <textarea id="postContent" placeholder="Conteúdo"></textarea>
             <input type="text" id="postTags" placeholder="Tags (separadas por vírgula)">
             <button class="btn" onclick="createPost()">Postar</button>
+            <button class="btn" onclick="cancelPost()" style="margin-left: 10px;">Cancelar</button>
         </div>
 
-        <!-- Busca -->
-        <input type="text" class="search" id="searchInput" placeholder="Buscar posts..." onkeyup="searchPosts()">
-
-        <!-- Posts -->
-        <div id="postsContainer">
-            <div class="loading">Carregando...</div>
+        <!-- Posts (aparecem só quando buscar) -->
+        <div id="postsContainer" style="display: none;">
         </div>
     </div>
 
@@ -290,7 +337,9 @@
                 document.getElementById('postTitle').value = '';
                 document.getElementById('postContent').value = '';
                 document.getElementById('postTags').value = '';
+                document.getElementById('createPostForm').style.display = 'none';
                 loadPosts();
+                alert('Post criado com sucesso!');
             } catch (error) {
                 alert('Erro ao criar post');
             }
@@ -438,11 +487,15 @@
 
         function searchPosts() {
             const term = document.getElementById('searchInput').value.toLowerCase();
+            const postsContainer = document.getElementById('postsContainer');
             
             if (!term) {
-                displayPosts(allPosts);
+                postsContainer.style.display = 'none';
                 return;
             }
+
+            // Mostrar container de posts quando buscar
+            postsContainer.style.display = 'block';
 
             const filtered = allPosts.filter(post => 
                 post.title.toLowerCase().includes(term) ||
@@ -453,6 +506,25 @@
             displayPosts(filtered);
         }
 
+        function toggleCreatePost() {
+            const form = document.getElementById('createPostForm');
+            const isVisible = form.style.display !== 'none';
+            
+            if (isVisible) {
+                form.style.display = 'none';
+            } else {
+                form.style.display = 'block';
+                document.getElementById('postTitle').focus();
+            }
+        }
+
+        function cancelPost() {
+            document.getElementById('createPostForm').style.display = 'none';
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postContent').value = '';
+            document.getElementById('postTags').value = '';
+        }
+
         // Enter para comentar
         document.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && e.target.id && e.target.id.startsWith('comment-input-')) {
@@ -461,8 +533,8 @@
             }
         });
 
-        // Inicializar
-        loadPosts();
+        // Inicializar - não carrega posts automaticamente
+        // loadPosts(); // Removido para não carregar na inicialização
     </script>
 </body>
 </html>
